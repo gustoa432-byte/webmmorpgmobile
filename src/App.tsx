@@ -148,13 +148,13 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-screen bg-slate-950 text-slate-100 font-sans overflow-hidden select-none">
-      {/* Main Game Screen Area (Zones 1-5) */}
-      <div className="relative flex-1 h-full flex flex-col min-w-0">
-        {/* Zone 1 & 2: System Safe-Area & Top Game HUD Panel */}
-        <header className="absolute top-0 left-0 right-0 z-30 flex flex-col bg-slate-950 border-b border-slate-800 pointer-events-auto pt-[env(safe-area-inset-top,0px)]">
-          <div className="flex items-center justify-between px-3 py-1.5 min-h-[52px]">
+      {/* Main Game Screen Area (Monolithic portrait container: Top Bar -> Game World -> Bottom Controls) */}
+      <div className="relative flex-1 h-full flex flex-col min-w-0 overflow-hidden">
+        {/* SAFE TOP & TOP BAR (Fixed height container: flex-none, shrink-0) */}
+        <header className="flex-none shrink-0 z-30 flex flex-col bg-slate-950 border-b border-slate-800 pt-[env(safe-area-inset-top,0px)]">
+          <div className="flex items-center justify-between px-3 py-1.5 h-14 min-h-[56px] max-h-[56px] box-border">
             {/* Left: Player Avatar / Level & Dual HP/MP Bars */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {/* Level / DK Badge */}
               <div className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-slate-900 border border-amber-500/60 shadow-md shrink-0">
                 <span className="text-[9px] font-mono text-amber-400 font-bold leading-tight">DK</span>
@@ -162,7 +162,7 @@ export default function App() {
               </div>
 
               {/* Stacked HP / MP Bars with numbers */}
-              <div className="flex flex-col gap-1 w-28 sm:w-36">
+              <div className="flex flex-col gap-1 w-24 sm:w-36 shrink-0">
                 {/* HP */}
                 <div className="flex items-center gap-1.5">
                   <div className="relative flex-1 h-3.5 bg-slate-900 rounded-sm overflow-hidden border border-red-950">
@@ -191,25 +191,20 @@ export default function App() {
               </div>
             </div>
 
-            {/* Center: Zen Gold & Location */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 border border-amber-500/40 rounded-lg text-amber-300 font-mono text-xs font-bold shadow-inner">
-                <Coins className="w-3.5 h-3.5 text-amber-400" />
-                <span>{playerVitals.zen.toLocaleString()}</span>
-              </div>
-              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700">
-                Лоренсия
-              </span>
+            {/* Center: Zen Gold */}
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-900 border border-amber-500/40 rounded-lg text-amber-300 font-mono text-xs font-bold shadow-inner shrink-0">
+              <Coins className="w-3.5 h-3.5 text-amber-400" />
+              <span>{playerVitals.zen.toLocaleString()}</span>
             </div>
 
-            {/* Right: Quick Action Buttons (Min 44x44px touch targets) */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Right: Quick Action Buttons (Touch targets >= 44x44px) */}
+            <div className="flex items-center gap-1.5 shrink-0">
               {/* Quick Potion [Q] button */}
               <button
                 onClick={triggerPotion}
                 disabled={playerVitals.potionCount <= 0 || playerVitals.isDead}
                 title="Выпить зелье здоровья [Q]"
-                className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-red-500/60 text-red-400 transition shadow-md disabled:opacity-50"
+                className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-red-500/60 text-red-400 transition shadow-md disabled:opacity-50 shrink-0"
               >
                 <HeartPulse className="w-5 h-5 text-red-400" />
                 <span className="absolute -top-1 -right-1 px-1.5 py-0.2 bg-red-600 text-white font-mono text-[9px] font-bold rounded-full">
@@ -221,7 +216,7 @@ export default function App() {
               <button
                 onClick={() => setShowInventory(true)}
                 title="Открыть инвентарь [I]"
-                className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-amber-500/50 text-amber-300 transition shadow-md"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-amber-500/50 text-amber-300 transition shadow-md shrink-0"
               >
                 <Backpack className="w-5 h-5 text-amber-400" />
               </button>
@@ -264,7 +259,7 @@ export default function App() {
               <button
                 onClick={() => setShowMobileMenu(true)}
                 title="Меню и Настройки"
-                className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-slate-700 text-slate-300 transition shadow-md lg:hidden"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-slate-700 text-slate-300 transition shadow-md lg:hidden shrink-0"
               >
                 <Menu className="w-5 h-5 text-slate-300" />
               </button>
@@ -280,7 +275,7 @@ export default function App() {
           </div>
         </header>
 
-        {/* Target Frame (Top Center below Zone 2) */}
+        {/* Target Frame (Positioned just under Top Bar if active) */}
         {targetInfo && (
           <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center bg-slate-900 border border-red-500/60 px-4 py-1.5 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 pointer-events-none">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-100">
@@ -305,8 +300,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Zone 3: Interactive Game Canvas (World Field - Taps, Double-tap Pickup) */}
-        <div className="flex-1 w-full h-full">
+        {/* GAME WORLD (canvas container: flex-1 min-h-0, the ONLY stretchable zone) */}
+        <main className="relative flex-1 min-h-0 w-full overflow-hidden">
           <GameCanvas
             core={core}
             showGrid={showGrid}
@@ -315,18 +310,10 @@ export default function App() {
             isPaused={isPaused}
             hardCamera={hardCamera}
           />
-        </div>
 
-        {/* In-Game Controls Overlay (Bottom Half - Portrait Priority) */}
-        <div className="absolute bottom-4 left-4 right-4 z-20 flex items-end justify-between pointer-events-none pb-[env(safe-area-inset-bottom,0px)]">
-          {/* Zone 4: Left Virtual Joystick (Movement) */}
-          <div className="pointer-events-auto">
-            <VirtualJoystick core={core} />
-          </div>
-
-          {/* Respawn Button if dead (Center Prompt) */}
+          {/* Respawn Button overlay if dead */}
           {playerVitals.isDead && (
-            <div className="pointer-events-auto mb-6 animate-bounce">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-auto animate-bounce">
               <button
                 onClick={triggerRespawn}
                 className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xl border-2 border-red-400 transition"
@@ -336,22 +323,30 @@ export default function App() {
               </button>
             </div>
           )}
+        </main>
 
-          {/* Desktop Controls Hint (Hidden on mobile) */}
-          <div className="hidden lg:flex flex-col gap-1 p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-400 font-mono pointer-events-none">
-            <div className="text-amber-400 font-semibold mb-0.5">Управление (ПК):</div>
-            <div>• Клик по мобу: Автоатака</div>
-            <div>• Дабл-клик: Подобрать предмет</div>
-            <div>• WASD / Джойстик: Движение</div>
-            <div>• 1-4 / Свайпы: Скиллы</div>
-            <div>• Q: Зелье HP | Пробел: Лут</div>
-          </div>
+        {/* BOTTOM CONTROLS & SAFE BOTTOM (Fixed container: flex-none shrink-0) */}
+        <footer className="flex-none shrink-0 z-20 bg-slate-950/80 border-t border-slate-800/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+          <div className="flex items-center justify-between w-full max-w-lg mx-auto">
+            {/* Zone 4: Left Virtual Joystick (Movement) */}
+            <div className="shrink-0">
+              <VirtualJoystick core={core} />
+            </div>
 
-          {/* Zone 5: Right Action Zone (Gestures: Swipe ↑/→/↓/← & Hold) */}
-          <div className="pointer-events-auto">
-            <ActionZone core={core} />
+            {/* Desktop Controls Hint (Hidden on mobile) */}
+            <div className="hidden lg:flex flex-col gap-1 p-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-400 font-mono">
+              <div className="text-amber-400 font-semibold">Управление (ПК):</div>
+              <div>• Клик по мобу: Автоатака</div>
+              <div>• Дабл-клик: Лут | WASD: Бег</div>
+              <div>• 1-4: Скиллы | Q: Зелье HP</div>
+            </div>
+
+            {/* Zone 5: Right Action Zone (Gestures: Swipe ↑/→/↓/← & Hold) */}
+            <div className="shrink-0">
+              <ActionZone core={core} />
+            </div>
           </div>
-        </div>
+        </footer>
       </div>
 
       {/* Desktop-Only Inspector Drawer (Hidden on mobile phones as requested) */}
