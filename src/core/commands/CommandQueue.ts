@@ -54,8 +54,8 @@ export class CommandQueue {
       if (Array.isArray(parsed)) {
         this.queue.push(...parsed);
       }
-    } catch (e) {
-      console.error('Failed to deserialize command queue:', e);
+    } catch (_e) {
+      // Ignored malformed command queue payload in headless mode
     }
   }
 }

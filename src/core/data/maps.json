@@ -6,7 +6,7 @@
   "cellSize": 1.0,
   "spawnPoint": {
     "x": 24,
-    "y": 24
+    "y": 27.5
   },
   "safeZoneRadius": 6.5,
   "obstacles": [

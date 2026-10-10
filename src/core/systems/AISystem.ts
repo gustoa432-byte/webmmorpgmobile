@@ -113,6 +113,8 @@ export class AISystem {
           if (targetPlayerId === null || targetDist > ai.leashRadius * 1.2) {
             ai.state = 'returning';
             combat.targetEntityId = null;
+            movement.targetPosition = { x: ai.spawnPoint.x, y: ai.spawnPoint.y };
+            movement.desiredDirection = null;
             break;
           }
 
@@ -122,22 +124,15 @@ export class AISystem {
             // Reached attack range! Transition to attack
             ai.state = 'attack';
             movement.targetPosition = null;
+            movement.desiredDirection = null;
             movement.velocity = { x: 0, y: 0 };
             movement.movementState = 'idle';
             transform.rotation = Math.atan2(targetPos.y - transform.position.y, targetPos.x - transform.position.x);
           } else {
             // Chase towards player
-            const dx = targetPos.x - transform.position.x;
-            const dy = targetPos.y - transform.position.y;
-            const dist = Math.hypot(dx, dy);
-
-            movement.targetPosition = null;
-            movement.velocity = {
-              x: (dx / dist) * movement.speed,
-              y: (dy / dist) * movement.speed
-            };
-            movement.movementState = 'running';
-            transform.rotation = Math.atan2(dy, dx);
+            movement.targetPosition = { x: targetPos.x, y: targetPos.y };
+            movement.desiredDirection = null;
+            transform.rotation = Math.atan2(targetPos.y - transform.position.y, targetPos.x - transform.position.x);
           }
           break;
         }
@@ -146,6 +141,8 @@ export class AISystem {
           if (targetPlayerId === null) {
             ai.state = 'returning';
             combat.targetEntityId = null;
+            movement.targetPosition = { x: ai.spawnPoint.x, y: ai.spawnPoint.y };
+            movement.desiredDirection = null;
             break;
           }
 
@@ -155,8 +152,12 @@ export class AISystem {
           if (targetDist > combat.attackRange * 1.3) {
             // Target moved away; resume chase
             ai.state = 'chase';
+            movement.targetPosition = { x: targetPos.x, y: targetPos.y };
+            movement.desiredDirection = null;
           } else {
             // Stay in place during attack
+            movement.targetPosition = null;
+            movement.desiredDirection = null;
             movement.velocity = { x: 0, y: 0 };
             movement.movementState = 'idle';
           }
@@ -165,23 +166,21 @@ export class AISystem {
 
         case 'returning': {
           combat.targetEntityId = null;
-          const dx = ai.spawnPoint.x - transform.position.x;
-          const dy = ai.spawnPoint.y - transform.position.y;
-          const dist = Math.hypot(dx, dy);
+          const distFromOrigin = Math.hypot(
+            ai.spawnPoint.x - transform.position.x,
+            ai.spawnPoint.y - transform.position.y
+          );
 
-          if (dist <= 0.5) {
+          if (distFromOrigin <= 0.6) {
             // Reached spawn point
             ai.state = 'idle';
+            movement.targetPosition = null;
+            movement.desiredDirection = null;
             movement.velocity = { x: 0, y: 0 };
             movement.movementState = 'idle';
-            movement.targetPosition = null;
           } else {
-            movement.velocity = {
-              x: (dx / dist) * ai.returnSpeed,
-              y: (dy / dist) * ai.returnSpeed
-            };
-            movement.movementState = 'running';
-            transform.rotation = Math.atan2(dy, dx);
+            movement.targetPosition = { x: ai.spawnPoint.x, y: ai.spawnPoint.y };
+            movement.desiredDirection = null;
           }
           break;
         }

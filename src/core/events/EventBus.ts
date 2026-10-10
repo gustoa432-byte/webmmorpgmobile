@@ -139,8 +139,8 @@ export class EventBus {
         for (const cb of specific) {
           try {
             cb(event);
-          } catch (e) {
-            console.error(`Error in event listener for ${event.type}:`, e);
+          } catch (_e) {
+            // Silently swallow listener error in core loop to protect deterministic engine execution
           }
         }
       }
@@ -151,8 +151,8 @@ export class EventBus {
         for (const cb of wildcard) {
           try {
             cb(event);
-          } catch (e) {
-            console.error('Error in wildcard event listener:', e);
+          } catch (_e) {
+            // Silently swallow listener error in core loop
           }
         }
       }

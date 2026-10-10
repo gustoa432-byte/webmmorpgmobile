@@ -85,28 +85,39 @@ export class CommandSystem {
             if (len > 0.001) {
               const nx = cmd.direction.x / len;
               const ny = cmd.direction.y / len;
-              movement.velocity = { x: nx * movement.speed, y: ny * movement.speed };
+              movement.desiredDirection = { x: nx, y: ny };
               movement.targetPosition = null;
-              movement.movementState = 'running';
 
-              // Update rotation facing direction
-              const transform = this.entities.getComponent(entityId, 'Transform');
-              if (transform) {
-                transform.rotation = Math.atan2(ny, nx);
+              // Disengage target if actively moving away or out of range
+              if (combat && combat.targetEntityId !== null) {
+                const targetTrans = this.entities.getComponent(combat.targetEntityId, 'Transform');
+                const pTrans = this.entities.getComponent(entityId, 'Transform');
+                if (targetTrans && pTrans) {
+                  const toTargetX = targetTrans.position.x - pTrans.position.x;
+                  const toTargetY = targetTrans.position.y - pTrans.position.y;
+                  const dist = Math.hypot(toTargetX, toTargetY);
+                  const dot = nx * toTargetX + ny * toTargetY;
+                  if (dot < 0 || dist > 8.0) {
+                    combat.targetEntityId = null;
+                    this.eventBus.emit({
+                      type: 'OnTargetChanged',
+                      entityId,
+                      targetId: null
+                    });
+                  }
+                } else {
+                  combat.targetEntityId = null;
+                }
               }
             } else {
+              movement.desiredDirection = null;
               movement.velocity = { x: 0, y: 0 };
               movement.movementState = 'idle';
             }
           } else if (cmd.targetPos) {
             // Point-and-click movement
             movement.targetPosition = { x: cmd.targetPos.x, y: cmd.targetPos.y };
-            movement.movementState = 'running';
-          }
-
-          // Manual movement clears target if moving away unless holding target
-          if (!cmd.targetPos && combat && cmd.direction && (cmd.direction.x !== 0 || cmd.direction.y !== 0)) {
-            // retain or clear depending on preference
+            movement.desiredDirection = null;
           }
         }
         break;
@@ -149,9 +160,8 @@ export class CommandSystem {
         // The PickupSystem checks entities with player tag or pickup commands
         const inventory = this.entities.getComponent(entityId, 'Inventory');
         if (inventory) {
-          // Let PickupSystem know which item was targeted (if any)
-          (inventory as any).pendingPickupItemId = cmd.targetItemId ?? null;
-          (inventory as any).wantsPickup = true;
+          inventory.pendingPickupItemId = cmd.targetItemId ?? null;
+          inventory.wantsPickup = true;
         }
         break;
       }

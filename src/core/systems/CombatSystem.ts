@@ -7,13 +7,16 @@ import { EntityManager } from '../entity/EntityManager';
 import { EventBus } from '../events/EventBus';
 import { SeededRNG } from '../rng/SeededRNG';
 import { ConfigLoader } from '../data/ConfigLoader';
+import { DamageCalculator } from '../combat/DamageCalculator';
+import { PhysicsWorld } from '../physics/PhysicsWorld';
 
 export class CombatSystem {
   constructor(
     private entities: EntityManager,
     private eventBus: EventBus,
     private rng: SeededRNG,
-    private configs: ConfigLoader
+    private configs: ConfigLoader,
+    private physics: PhysicsWorld
   ) {}
 
   public update(dt: number): void {
@@ -23,7 +26,6 @@ export class CombatSystem {
       const transform = this.entities.getComponent(attackerId, 'Transform');
       const combat = this.entities.getComponent(attackerId, 'Combat');
       const health = this.entities.getComponent(attackerId, 'Health');
-      const movement = this.entities.getComponent(attackerId, 'Movement');
 
       if (!transform || !combat || !health || health.isDead) {
         continue;
@@ -61,35 +63,21 @@ export class CombatSystem {
         continue;
       }
 
+      // Safe zone check: combat is disabled if either combatant is in safe zone
+      if (
+        this.physics.grid.isSafeZone({ x: transform.position.x, y: transform.position.y }) ||
+        this.physics.grid.isSafeZone({ x: targetTransform.position.x, y: targetTransform.position.y })
+      ) {
+        continue;
+      }
+
       // Calculate distance to target
       const dx = targetTransform.position.x - transform.position.x;
       const dy = targetTransform.position.y - transform.position.y;
       const distance = Math.hypot(dx, dy);
 
-      // Player auto-approach logic:
-      // If attacker is Player and distance > attackRange, steer towards target
-      const isPlayer = this.entities.hasTag(attackerId, 'Player');
-      if (isPlayer && distance > combat.attackRange) {
-        if (movement) {
-          movement.velocity = {
-            x: (dx / distance) * movement.speed,
-            y: (dy / distance) * movement.speed
-          };
-          movement.movementState = 'running';
-          transform.rotation = Math.atan2(dy, dx);
-        }
-        continue; // Keep approaching until in attack range
-      }
-
-      // If in attack range, stop running and attack
+      // Attack phase: only execute attack when target is within attack range
       if (distance <= combat.attackRange) {
-        if (isPlayer && movement && movement.targetPosition === null) {
-          movement.velocity = { x: 0, y: 0 };
-          movement.movementState = 'idle';
-        }
-
-        transform.rotation = Math.atan2(dy, dx);
-
         // Can we attack now?
         if (combat.attackTimer <= 0) {
           this.executeAutoAttack(attackerId, targetId, transform.position, targetTransform.position);
@@ -100,83 +88,38 @@ export class CombatSystem {
           combat.attackAnimationTimer = combat.attackAnimationDuration;
         }
       }
+      // Note: If distance > combat.attackRange, MovementSystem handles approach cleanly!
     }
   }
 
   private executeAutoAttack(
     attackerId: number,
     targetId: number,
-    attackerPos: { x: number; y: number; z: number },
+    _attackerPos: { x: number; y: number; z: number },
     targetPos: { x: number; y: number; z: number }
   ): void {
-    const combat = this.entities.getComponent(attackerId, 'Combat')!;
-    const targetCombat = this.entities.getComponent(targetId, 'Combat');
     const targetHealth = this.entities.getComponent(targetId, 'Health')!;
-    const playerComp = this.entities.getComponent(attackerId, 'Player');
-    const targetPlayerComp = this.entities.getComponent(targetId, 'Player');
 
-    // Calculate attack stats
-    let minDmg = combat.damageMin;
-    let maxDmg = combat.damageMax;
+    // Unified damage calculation using DamageCalculator
+    const calc = DamageCalculator.calculateDamage(
+      attackerId,
+      targetId,
+      this.entities,
+      this.rng,
+      this.configs,
+      1.0,
+      0
+    );
 
-    if (playerComp) {
-      // Dark knight strength contribution (STR / 6)
-      const strBonus = Math.floor(playerComp.stats.strength / 6);
-      minDmg += strBonus;
-      maxDmg += strBonus;
-
-      // Inventory weapon bonus
-      const inv = this.entities.getComponent(attackerId, 'Inventory');
-      if (inv?.equipment.weapon) {
-        const weaponItem = this.configs.getItem(inv.equipment.weapon.templateId);
-        if (weaponItem?.bonusDamage) {
-          minDmg += weaponItem.bonusDamage;
-          maxDmg += weaponItem.bonusDamage;
-        }
-      }
-    }
-
-    // Roll base raw damage
-    let rawDamage = this.rng.range(minDmg, maxDmg);
-
-    // Defense calculation
-    let defense = targetCombat?.defense ?? 0;
-    if (targetPlayerComp) {
-      defense += Math.floor(targetPlayerComp.stats.agility / 3);
-      const inv = this.entities.getComponent(targetId, 'Inventory');
-      if (inv?.equipment) {
-        for (const slotKey of ['armor', 'helm', 'pants', 'gloves', 'boots', 'shield'] as const) {
-          const item = inv.equipment[slotKey];
-          if (item) {
-            const itemConf = this.configs.getItem(item.templateId);
-            if (itemConf?.bonusDefense) {
-              defense += itemConf.bonusDefense;
-            }
-          }
-        }
-      }
-    }
-
-    // Critical hit chance: 8% base + AGI / 100 for players
-    const critChance = playerComp ? 0.08 + (playerComp.stats.agility * 0.001) : 0.04;
-    const isCrit = this.rng.chance(critChance);
-
-    let finalDamage = Math.max(1, rawDamage - Math.floor(defense * 0.5));
-    if (isCrit) {
-      finalDamage = Math.floor(maxDmg * 1.25) - Math.floor(defense * 0.3);
-      finalDamage = Math.max(Math.floor(maxDmg * 0.8), finalDamage);
-    }
-
-    // Apply damage
-    targetHealth.currentHp = Math.max(0, targetHealth.currentHp - finalDamage);
+    targetHealth.currentHp = Math.max(0, targetHealth.currentHp - calc.damage);
 
     this.eventBus.emit({
       type: 'OnEntityDamaged',
       targetId,
       sourceId: attackerId,
-      damage: finalDamage,
-      isCrit,
-      isMiss: false,
+      damage: calc.damage,
+      isCrit: calc.isCrit,
+      isMiss: calc.isMiss,
       remainingHp: targetHealth.currentHp,
       position: { ...targetPos }
     });

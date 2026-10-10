@@ -17,6 +17,7 @@ interface RespawnEntry {
 
 export class SpawnSystem {
   private respawnQueue: RespawnEntry[] = [];
+  private pendingDestroyIds: EntityId[] = [];
   private unsubscribe: (() => void) | null = null;
 
   constructor(
@@ -45,8 +46,10 @@ export class SpawnSystem {
         this.generateLootDrops(monsterConf, transform.position);
       }
 
-      // 2. Schedule monster respawn
-      const respawnTime = 5.0; // seconds
+      // 2. Schedule monster respawn using spawnZone config
+      const mapConf = this.configs.getMap();
+      const zone = mapConf.spawnZones.find(z => z.monsterId === templateId);
+      const respawnTime = zone?.respawnTimeSeconds ?? 6.0;
       const spawnPoint = ai ? { ...ai.spawnPoint } : { x: 20, y: 20 };
 
       this.respawnQueue.push({
@@ -55,8 +58,8 @@ export class SpawnSystem {
         remainingSeconds: respawnTime
       });
 
-      // 3. Destroy old dead monster entity
-      this.entities.destroyEntity(deadId);
+      // 3. Queue old dead monster entity for deferred destruction at end of tick
+      this.pendingDestroyIds.push(deadId);
     }
   }
 
@@ -119,7 +122,15 @@ export class SpawnSystem {
   }
 
   public update(dt: number): void {
-    // Process respawn timers
+    // 1. Process deferred entity destructions from dead entities
+    if (this.pendingDestroyIds.length > 0) {
+      for (const id of this.pendingDestroyIds) {
+        this.entities.destroyEntity(id);
+      }
+      this.pendingDestroyIds = [];
+    }
+
+    // 2. Process respawn timers
     for (let i = this.respawnQueue.length - 1; i >= 0; i--) {
       const entry = this.respawnQueue[i];
       entry.remainingSeconds -= dt;

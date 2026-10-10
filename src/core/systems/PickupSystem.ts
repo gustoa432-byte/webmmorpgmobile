@@ -8,6 +8,8 @@ import { EventBus } from '../events/EventBus';
 import { ConfigLoader } from '../data/ConfigLoader';
 
 export class PickupSystem {
+  private itemCounter: number = 1;
+
   constructor(
     private entities: EntityManager,
     private eventBus: EventBus,
@@ -27,14 +29,14 @@ export class PickupSystem {
 
       if (!pTransform || !pInventory || pHealth?.isDead) continue;
 
-      const wantsPickup = (pInventory as any).wantsPickup === true;
-      const targetedItemId = (pInventory as any).pendingPickupItemId as number | null;
+      const wantsPickup = pInventory.wantsPickup;
+      const targetedItemId = pInventory.pendingPickupItemId;
 
       // Reset pickup intent flag for this tick
-      (pInventory as any).wantsPickup = false;
-      (pInventory as any).pendingPickupItemId = null;
+      pInventory.wantsPickup = false;
+      pInventory.pendingPickupItemId = null;
 
-      // Pickup radius: 1.0 for walk-over, 2.4 if explicitly commanded to pick up
+      // Pickup radius: 0.8 for walk-over, 2.4 if explicitly commanded to pick up
       const pickupRadius = wantsPickup ? 2.4 : 0.8;
 
       for (const itemId of itemEntities) {
@@ -116,7 +118,7 @@ export class PickupSystem {
 
     // Add new inventory entry
     inventory.items.push({
-      id: `item_${Date.now()}_${itemId}`,
+      id: `item_${this.itemCounter++}_${itemId}`,
       templateId: itemDrop.templateId,
       name: itemDrop.itemName,
       count: itemDrop.count

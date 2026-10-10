@@ -69,7 +69,7 @@ export class Core {
     this.commandSystem = new CommandSystem(this.entities, this.commandQueue, this.eventBus, this.configs);
     this.movementSystem = new MovementSystem(this.entities, this.physics);
     this.aiSystem = new AISystem(this.entities, this.rng, this.physics);
-    this.combatSystem = new CombatSystem(this.entities, this.eventBus, this.rng, this.configs);
+    this.combatSystem = new CombatSystem(this.entities, this.eventBus, this.rng, this.configs, this.physics);
     this.skillSystem = new SkillSystem(this.entities, this.eventBus, this.rng, this.configs);
     this.pickupSystem = new PickupSystem(this.entities, this.eventBus, this.configs);
     this.progressionSystem = new ProgressionSystem(this.entities, this.eventBus);
@@ -147,6 +147,7 @@ export class Core {
       type: 'Movement',
       speed: 4.8,
       velocity: { x: 0, y: 0 },
+      desiredDirection: null,
       targetPosition: null,
       path: [],
       movementState: 'idle',
@@ -209,6 +210,8 @@ export class Core {
       ],
       zen: 500,
       capacity: 32,
+      wantsPickup: false,
+      pendingPickupItemId: null,
       equipment: {
         weapon: { id: 'eq_sword', templateId: 'short_sword', name: 'Short Sword', count: 1, equippedSlot: 'weapon' }
       }
@@ -288,13 +291,13 @@ export class Core {
     // 1. Process incoming commands
     this.commandSystem.update(dt);
 
-    // 2. Movement + collisions + wall sliding
-    this.movementSystem.update(dt);
-
-    // 3. AI logic (mobs aggro, wander, chase, attack)
+    // 2. AI logic (mobs decide states and update targets/desired positions)
     this.aiSystem.update(dt);
 
-    // 4. Combat (auto-attacks, damage mitigation, crits)
+    // 3. Movement + collisions + wall sliding + target approach
+    this.movementSystem.update(dt);
+
+    // 4. Combat (auto-attacks when in range)
     this.combatSystem.update(dt);
 
     // 5. Skills (cooldowns, casts, mana)
@@ -334,7 +337,7 @@ export class Core {
     this.commandSystem = new CommandSystem(this.entities, this.commandQueue, this.eventBus, this.configs);
     this.movementSystem = new MovementSystem(this.entities, this.physics);
     this.aiSystem = new AISystem(this.entities, this.rng, this.physics);
-    this.combatSystem = new CombatSystem(this.entities, this.eventBus, this.rng, this.configs);
+    this.combatSystem = new CombatSystem(this.entities, this.eventBus, this.rng, this.configs, this.physics);
     this.skillSystem = new SkillSystem(this.entities, this.eventBus, this.rng, this.configs);
     this.pickupSystem = new PickupSystem(this.entities, this.eventBus, this.configs);
     this.progressionSystem = new ProgressionSystem(this.entities, this.eventBus);

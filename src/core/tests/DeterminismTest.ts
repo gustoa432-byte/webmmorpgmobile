@@ -92,20 +92,25 @@ export function runCoreVerification(): VerificationReport {
   });
 
   // --- Criterion 5: Monster Death & Item Drop ---
-  // Ensure monster dies
+  // Reduce monster HP to 1 so the next attack lands the fatal blow
   const targetHealth = core1.entities.getComponent(targetMonsterId, 'Health');
   if (targetHealth) {
-    targetHealth.currentHp = 0; // Force kill to trigger drop
+    targetHealth.currentHp = 1;
   }
-  for (let i = 0; i < 5; i++) {
+
+  // Step ticks until death blow lands
+  for (let i = 0; i < 25; i++) {
     core1.fixedUpdate(0.05);
+    if (targetHealth?.isDead) {
+      break;
+    }
   }
 
   const itemEntities = core1.entities.getEntitiesByTag('Item');
   results.push({
     name: '5. Monster Death & Loot Drop',
     passed: itemEntities.length > 0,
-    details: `Dropped ${itemEntities.length} ground item entity(ies) upon monster defeat.`
+    details: `Defeated monster and dropped ${itemEntities.length} ground item entity(ies).`
   });
 
   // --- Criterion 6: Item Pickup ---

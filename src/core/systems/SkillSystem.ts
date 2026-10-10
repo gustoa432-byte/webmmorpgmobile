@@ -7,6 +7,7 @@ import { EntityManager } from '../entity/EntityManager';
 import { EventBus } from '../events/EventBus';
 import { SeededRNG } from '../rng/SeededRNG';
 import { ConfigLoader } from '../data/ConfigLoader';
+import { DamageCalculator } from '../combat/DamageCalculator';
 
 export class SkillSystem {
   constructor(
@@ -23,7 +24,6 @@ export class SkillSystem {
       const transform = this.entities.getComponent(casterId, 'Transform');
       const skillSet = this.entities.getComponent(casterId, 'SkillSet');
       const health = this.entities.getComponent(casterId, 'Health');
-      const combat = this.entities.getComponent(casterId, 'Combat');
       const player = this.entities.getComponent(casterId, 'Player');
 
       if (!transform || !skillSet || !health || health.isDead) {
@@ -75,11 +75,6 @@ export class SkillSystem {
   private executeSkill(casterId: number, skill: ReturnType<ConfigLoader['getSkill']> & {}): void {
     const casterTransform = this.entities.getComponent(casterId, 'Transform')!;
     const casterCombat = this.entities.getComponent(casterId, 'Combat');
-    const casterPlayer = this.entities.getComponent(casterId, 'Player');
-
-    const baseDmg = casterCombat ? this.rng.range(casterCombat.damageMin, casterCombat.damageMax) : 20;
-    const strBonus = casterPlayer ? Math.floor(casterPlayer.stats.strength / 5) : 0;
-    const totalBase = (baseDmg + strBonus) * skill.damageMultiplier;
 
     this.eventBus.emit({
       type: 'OnSkillUsed',
@@ -98,7 +93,6 @@ export class SkillSystem {
       for (const mId of monsters) {
         const mTransform = this.entities.getComponent(mId, 'Transform');
         const mHealth = this.entities.getComponent(mId, 'Health');
-        const mCombat = this.entities.getComponent(mId, 'Combat');
         if (!mTransform || !mHealth || mHealth.isDead) continue;
 
         const dist = Math.hypot(
@@ -107,14 +101,13 @@ export class SkillSystem {
         );
 
         if (dist <= skill.aoeRadius) {
-          this.applySkillDamage(casterId, mId, totalBase, mCombat?.defense ?? 0, mTransform.position);
+          this.applySkillDamage(casterId, mId, skill.damageMultiplier, mTransform.position);
         }
       }
     } else if (skill.effectType === 'single_target' || skill.effectType === 'dash') {
       // Hits targetEntityId or closest monster in front
       let targetId = casterCombat?.targetEntityId;
       if (!targetId || !this.entities.hasEntity(targetId)) {
-        // Find closest monster within range
         const monsters = this.entities.getEntitiesByTag('Monster');
         let closestDist = skill.range;
         for (const mId of monsters) {
@@ -136,9 +129,8 @@ export class SkillSystem {
       if (targetId && this.entities.hasEntity(targetId)) {
         const mTransform = this.entities.getComponent(targetId, 'Transform');
         const mHealth = this.entities.getComponent(targetId, 'Health');
-        const mCombat = this.entities.getComponent(targetId, 'Combat');
         if (mTransform && mHealth && !mHealth.isDead) {
-          this.applySkillDamage(casterId, targetId, totalBase, mCombat?.defense ?? 0, mTransform.position);
+          this.applySkillDamage(casterId, targetId, skill.damageMultiplier, mTransform.position);
         }
       }
     }
@@ -147,28 +139,32 @@ export class SkillSystem {
   private applySkillDamage(
     attackerId: number,
     targetId: number,
-    damage: number,
-    targetDefense: number,
+    damageMultiplier: number,
     targetPos: { x: number; y: number; z: number }
   ): void {
     const targetHealth = this.entities.getComponent(targetId, 'Health');
     if (!targetHealth || targetHealth.isDead) return;
 
-    const isCrit = this.rng.chance(0.18); // Skills have higher crit
-    let finalDmg = Math.max(1, Math.floor(damage - targetDefense * 0.4));
-    if (isCrit) {
-      finalDmg = Math.floor(finalDmg * 1.35);
-    }
+    // Use unified DamageCalculator with skill multiplier and 10% bonus crit
+    const calc = DamageCalculator.calculateDamage(
+      attackerId,
+      targetId,
+      this.entities,
+      this.rng,
+      this.configs,
+      damageMultiplier,
+      0.10
+    );
 
-    targetHealth.currentHp = Math.max(0, targetHealth.currentHp - finalDmg);
+    targetHealth.currentHp = Math.max(0, targetHealth.currentHp - calc.damage);
 
     this.eventBus.emit({
       type: 'OnEntityDamaged',
       targetId,
       sourceId: attackerId,
-      damage: finalDmg,
-      isCrit,
-      isMiss: false,
+      damage: calc.damage,
+      isCrit: calc.isCrit,
+      isMiss: calc.isMiss,
       remainingHp: targetHealth.currentHp,
       position: { ...targetPos }
     });

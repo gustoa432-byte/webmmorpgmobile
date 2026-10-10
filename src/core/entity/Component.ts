@@ -40,6 +40,7 @@ export interface MovementComponent extends BaseComponent {
   readonly type: 'Movement';
   speed: number;
   velocity: Vec2;
+  desiredDirection: Vec2 | null;
   targetPosition: Vec2 | null;
   path: Vec2[];
   movementState: MovementState;
@@ -102,6 +103,8 @@ export interface InventoryComponent extends BaseComponent {
   items: InventoryItem[];
   zen: number;
   capacity: number;
+  wantsPickup: boolean;
+  pendingPickupItemId: number | null;
   equipment: {
     weapon?: InventoryItem;
     shield?: InventoryItem;
