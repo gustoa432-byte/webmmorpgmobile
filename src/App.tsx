@@ -300,20 +300,23 @@ export default function App() {
           </div>
         )}
 
-        {/* GAME WORLD (canvas container: flex-1 min-h-0, the ONLY stretchable zone) */}
-        <main className="relative flex-1 min-h-0 w-full overflow-hidden">
-          <GameCanvas
-            core={core}
-            showGrid={showGrid}
-            onSelectEntity={setSelectedEntityId}
-            selectedEntityId={selectedEntityId}
-            isPaused={isPaused}
-            hardCamera={hardCamera}
-          />
+        {/* GAME WORLD (canvas container: flex-1 min-h-0, the ONLY stretchable zone, relative for floating footer) */}
+        <div className="relative flex-1 min-h-0 w-full overflow-hidden flex flex-col justify-end">
+          {/* Canvas fills entire world area */}
+          <div className="absolute inset-0">
+            <GameCanvas
+              core={core}
+              showGrid={showGrid}
+              onSelectEntity={setSelectedEntityId}
+              selectedEntityId={selectedEntityId}
+              isPaused={isPaused}
+              hardCamera={hardCamera}
+            />
+          </div>
 
           {/* Respawn Button overlay if dead */}
           {playerVitals.isDead && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-auto animate-bounce">
+            <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-20 pointer-events-auto animate-bounce">
               <button
                 onClick={triggerRespawn}
                 className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xl border-2 border-red-400 transition"
@@ -323,35 +326,35 @@ export default function App() {
               </button>
             </div>
           )}
-        </main>
 
-        {/* BOTTOM CONTROLS & SAFE BOTTOM (Fixed container: flex-none shrink-0) */}
-        <footer
-          style={{
-            paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))'
-          }}
-          className="flex-none shrink-0 z-20 bg-slate-950 border-t border-slate-800 px-3 sm:px-4 pt-2.5"
-        >
-          <div className="flex items-end justify-between w-full max-w-lg mx-auto">
-            {/* Zone 4: Left Virtual Joystick (Movement) */}
-            <div className="shrink-0">
-              <VirtualJoystick core={core} />
-            </div>
+          {/* BOTTOM CONTROLS & SAFE BOTTOM (Transparent footer overlaying the bottom of the map) */}
+          <footer
+            style={{
+              paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))'
+            }}
+            className="relative z-20 bg-transparent px-3 sm:px-4 pt-2.5 pointer-events-none"
+          >
+            <div className="flex items-end justify-between w-full max-w-lg mx-auto">
+              {/* Zone 4: Left Virtual Joystick (Movement) */}
+              <div className="shrink-0 pointer-events-auto">
+                <VirtualJoystick core={core} />
+              </div>
 
-            {/* Desktop Controls Hint (Hidden on mobile) */}
-            <div className="hidden lg:flex flex-col gap-1 p-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-400 font-mono mb-2">
-              <div className="text-amber-400 font-semibold">Управление (ПК):</div>
-              <div>• Клик по мобу: Автоатака</div>
-              <div>• Дабл-клик: Лут | WASD: Бег</div>
-              <div>• 1-4: Скиллы | Q: Зелье HP</div>
-            </div>
+              {/* Desktop Controls Hint (Hidden on mobile) */}
+              <div className="hidden lg:flex flex-col gap-1 p-2 bg-slate-900/80 border border-slate-800 rounded-xl text-[10px] text-slate-400 font-mono mb-2 pointer-events-auto">
+                <div className="text-amber-400 font-semibold">Управление (ПК):</div>
+                <div>• Клик по мобу: Автоатака</div>
+                <div>• Дабл-клик: Лут | WASD: Бег</div>
+                <div>• 1-4: Скиллы | Q: Зелье HP</div>
+              </div>
 
-            {/* Zone 5: Right Action Zone (Gestures: Swipe ↑/→/↓/← & Hold) */}
-            <div className="shrink-0">
-              <ActionZone core={core} />
+              {/* Zone 5: Right Action Zone (Gestures: Swipe ↑/→/↓/← & Hold) */}
+              <div className="shrink-0 pointer-events-auto">
+                <ActionZone core={core} />
+              </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </div>
       </div>
 
       {/* Desktop-Only Inspector Drawer (Hidden on mobile phones as requested) */}

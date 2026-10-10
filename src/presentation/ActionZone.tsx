@@ -47,6 +47,7 @@ export const ActionZone: React.FC<ActionZoneProps> = ({ core }) => {
   const startPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const holdTimerRef = useRef<number | null>(null);
   const isHoldTriggeredRef = useRef(false);
+  const activeDirectionRef = useRef<ActionDirection | null>(null);
 
   const playerId = core.getPlayerId();
 
@@ -93,20 +94,91 @@ export const ActionZone: React.FC<ActionZoneProps> = ({ core }) => {
     });
   }, [core, playerId]);
 
-  // Pointer event handlers for gesture-driven Action Zone
+  // Global window listeners for pointermove, pointerup, pointercancel
+  // This allows the swipe to travel anywhere across the screen (to notch, edges, over the map)
+  useEffect(() => {
+    const handleGlobalPointerMove = (e: PointerEvent) => {
+      if (pointerIdRef.current === null || pointerIdRef.current !== e.pointerId) return;
+      if (isHoldTriggeredRef.current) return;
+
+      const dx = e.clientX - startPosRef.current.x;
+      const dy = e.clientY - startPosRef.current.y;
+      const dist = Math.hypot(dx, dy);
+
+      // Cancel hold timer once finger clearly moves past deadzone threshold (~15px)
+      if (dist > 15 && holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+
+      // Directional threshold: ~18px from start position
+      if (dist >= 18) {
+        let dir: ActionDirection;
+        if (Math.abs(dy) > Math.abs(dx)) {
+          dir = dy < 0 ? 'up' : 'down';
+        } else {
+          dir = dx > 0 ? 'right' : 'left';
+        }
+        activeDirectionRef.current = dir;
+        setActiveDirection(dir);
+
+        // Clamp visual knob translation
+        const maxOffset = 26;
+        const angle = Math.atan2(dy, dx);
+        setKnobOffset({
+          x: Math.cos(angle) * maxOffset,
+          y: Math.sin(angle) * maxOffset
+        });
+      } else {
+        // If already locked a direction, keep it locked so returning near center doesn't cancel swipe
+        if (!activeDirectionRef.current) {
+          setKnobOffset({ x: dx * 0.5, y: dy * 0.5 });
+        }
+      }
+    };
+
+    const handleGlobalPointerEnd = (e: PointerEvent) => {
+      if (pointerIdRef.current === null || pointerIdRef.current !== e.pointerId) return;
+
+      if (holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+
+      // If hold was triggered, loadout menu was opened; don't execute skill
+      const dirToExecute = activeDirectionRef.current;
+      if (!isHoldTriggeredRef.current && dirToExecute) {
+        const slot = DIRECTION_TO_SLOT[dirToExecute];
+        executeSkillSlot(slot);
+      }
+
+      pointerIdRef.current = null;
+      activeDirectionRef.current = null;
+      setIsSwiping(false);
+      setActiveDirection(null);
+      setKnobOffset({ x: 0, y: 0 });
+    };
+
+    window.addEventListener('pointermove', handleGlobalPointerMove);
+    window.addEventListener('pointerup', handleGlobalPointerEnd);
+    window.addEventListener('pointercancel', handleGlobalPointerEnd);
+
+    return () => {
+      window.removeEventListener('pointermove', handleGlobalPointerMove);
+      window.removeEventListener('pointerup', handleGlobalPointerEnd);
+      window.removeEventListener('pointercancel', handleGlobalPointerEnd);
+    };
+  }, [executeSkillSlot]);
+
+  // Pointerdown inside ActionZone initiates the gesture
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.stopPropagation();
     if (pointerIdRef.current !== null) return;
 
     pointerIdRef.current = e.pointerId;
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // fallback
-    }
-
     startPosRef.current = { x: e.clientX, y: e.clientY };
     isHoldTriggeredRef.current = false;
+    activeDirectionRef.current = null;
     setIsSwiping(true);
     setActiveDirection(null);
     setKnobOffset({ x: 0, y: 0 });
@@ -118,66 +190,9 @@ export const ActionZone: React.FC<ActionZoneProps> = ({ core }) => {
       setShowLoadoutMenu(true);
       setIsSwiping(false);
       setActiveDirection(null);
+      activeDirectionRef.current = null;
       setKnobOffset({ x: 0, y: 0 });
     }, 450);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    if (pointerIdRef.current !== e.pointerId || isHoldTriggeredRef.current) return;
-
-    const dx = e.clientX - startPosRef.current.x;
-    const dy = e.clientY - startPosRef.current.y;
-    const dist = Math.hypot(dx, dy);
-
-    // Cancel hold timer once finger clearly moves
-    if (dist > 15 && holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-
-    // Deadzone and directional threshold (~20px)
-    if (dist >= 20) {
-      let dir: ActionDirection;
-      if (Math.abs(dy) > Math.abs(dx)) {
-        dir = dy < 0 ? 'up' : 'down';
-      } else {
-        dir = dx > 0 ? 'right' : 'left';
-      }
-      setActiveDirection(dir);
-
-      // Clamp visual knob translation
-      const maxOffset = 26;
-      const angle = Math.atan2(dy, dx);
-      setKnobOffset({
-        x: Math.cos(angle) * maxOffset,
-        y: Math.sin(angle) * maxOffset
-      });
-    } else {
-      setActiveDirection(null);
-      setKnobOffset({ x: dx * 0.5, y: dy * 0.5 });
-    }
-  };
-
-  const handlePointerEnd = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    if (pointerIdRef.current !== e.pointerId) return;
-
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-
-    // If hold was triggered, menu is opened; don't fire skill
-    if (!isHoldTriggeredRef.current && activeDirection) {
-      const slot = DIRECTION_TO_SLOT[activeDirection];
-      executeSkillSlot(slot);
-    }
-
-    pointerIdRef.current = null;
-    setIsSwiping(false);
-    setActiveDirection(null);
-    setKnobOffset({ x: 0, y: 0 });
   };
 
   const skillSet = core.entities.getComponent(playerId, 'SkillSet');
@@ -220,15 +235,12 @@ export const ActionZone: React.FC<ActionZoneProps> = ({ core }) => {
       <div
         ref={containerRef}
         onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerEnd}
-        onPointerCancel={handlePointerEnd}
-        className="relative w-32 h-32 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center touch-none select-none pointer-events-auto shadow-2xl"
+        className="relative w-32 h-32 rounded-full bg-slate-900/65 border-2 border-slate-700/80 flex items-center justify-center touch-none select-none pointer-events-auto shadow-2xl"
         title="Action-зона: Свайп ↑/→/↓/← для навыков, удержание для смены"
       >
         {/* Direction Sector Dividers */}
-        <div className="absolute w-full h-px bg-slate-700/60" />
-        <div className="absolute h-full w-px bg-slate-700/60" />
+        <div className="absolute w-full h-px bg-slate-700/40" />
+        <div className="absolute h-full w-px bg-slate-700/40" />
 
         {/* 1. UP Sector (Slot 1: Защита / Навык оружия) */}
         <div
@@ -306,21 +318,24 @@ export const ActionZone: React.FC<ActionZoneProps> = ({ core }) => {
           </span>
         </div>
 
-        {/* Center Dynamic Action Knob */}
+        {/* Center Dynamic Action Knob with diagonal cross ✕ */}
         <div
           style={{
             transform: `translate(${knobOffset.x}px, ${knobOffset.y}px)`
           }}
           className={`w-11 h-11 rounded-full border-2 transition-transform duration-75 flex flex-col items-center justify-center shadow-lg z-10 ${
             activeDirection
-              ? 'bg-amber-500 border-amber-300 scale-110 shadow-amber-500/50'
+              ? 'bg-amber-500/95 border-amber-300 scale-110 shadow-amber-500/50'
               : isSwiping
-              ? 'bg-slate-700 border-slate-500 scale-95'
-              : 'bg-slate-800 border-slate-600'
+              ? 'bg-slate-700/95 border-slate-400 scale-95'
+              : 'bg-slate-800/90 border-slate-600/90'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-200" />
-          <span className="text-[7px] font-mono font-bold text-slate-300 uppercase leading-none mt-0.5">
+          {/* Diagonal Cross ✕ (visual only, like ><) */}
+          <span className="text-base font-bold text-amber-200 leading-none select-none">
+            ✕
+          </span>
+          <span className="text-[6.5px] font-mono font-bold text-slate-300 uppercase leading-none mt-0.5">
             {activeDirection ? activeDirection.toUpperCase() : 'СВАЙП'}
           </span>
         </div>

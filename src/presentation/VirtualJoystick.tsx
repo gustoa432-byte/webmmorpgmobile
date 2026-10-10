@@ -255,17 +255,17 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ core }) => {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
       onPointerCancel={handlePointerEnd}
-      className="relative w-32 h-32 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center touch-none select-none pointer-events-auto shadow-2xl"
+      className="relative w-32 h-32 rounded-full bg-slate-900/65 border-2 border-slate-700/80 flex items-center justify-center touch-none select-none pointer-events-auto shadow-2xl"
     >
       {/* Background crosshair */}
       <div className="absolute w-full h-px bg-slate-700/40" />
       <div className="absolute h-full w-px bg-slate-700/40" />
 
       {/* Direction indicators */}
-      <span className="absolute top-1 text-[9px] font-mono text-slate-500 font-bold">W</span>
-      <span className="absolute bottom-1 text-[9px] font-mono text-slate-500 font-bold">S</span>
-      <span className="absolute left-1.5 text-[9px] font-mono text-slate-500 font-bold">A</span>
-      <span className="absolute right-1.5 text-[9px] font-mono text-slate-500 font-bold">D</span>
+      <span className="absolute top-1 text-[9px] font-mono text-slate-400/80 font-bold">W</span>
+      <span className="absolute bottom-1 text-[9px] font-mono text-slate-400/80 font-bold">S</span>
+      <span className="absolute left-1.5 text-[9px] font-mono text-slate-400/80 font-bold">A</span>
+      <span className="absolute right-1.5 text-[9px] font-mono text-slate-400/80 font-bold">D</span>
 
       {/* Joystick Handle / Knob */}
       <div
@@ -275,7 +275,7 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ core }) => {
         className={`w-12 h-12 rounded-full border-2 transition-transform duration-75 flex items-center justify-center shadow-lg ${
           isJoystickPushed
             ? 'bg-amber-500/90 border-amber-300 scale-105'
-            : 'bg-slate-700 border-slate-500'
+            : 'bg-slate-700/90 border-slate-500/90'
         }`}
       >
         <div className="w-4 h-4 rounded-full bg-white/40" />

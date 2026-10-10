@@ -643,17 +643,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         targetItemId
       });
 
-      // Visual feedback: Floating "ПОДНЯТО!" message
-      floatingTextsRef.current.push({
-        id: nextFxId.current++,
-        text: 'ПОДНЯТО!',
-        x: worldX,
-        y: worldY,
-        color: '#facc15',
-        isCrit: true,
-        age: 0
-      });
-
       return;
     }
 
