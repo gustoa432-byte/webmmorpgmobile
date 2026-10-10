@@ -22,7 +22,7 @@ export interface BaseCommand {
 
 export interface MoveCommand extends BaseCommand {
   readonly type: 'Move';
-  readonly direction?: Vec2; // Normalized direction vector for continuous input (joystick/keys)
+  readonly direction?: Vec2 | null; // Normalized direction vector for continuous input (joystick/keys), or null to stop
   readonly targetPos?: Vec2;  // Target point for point-and-click / tap
 }
 

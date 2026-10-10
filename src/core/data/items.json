@@ -1,141 +1,141 @@
 [
   {
     "id": "zen",
-    "name": "Zen",
+    "name": "Zen (Золото)",
     "rarity": "common",
     "type": "currency",
     "color": "#fbbf24",
     "sellPrice": 1,
     "stackable": true,
-    "description": "The gold currency of the Continent of MU."
+    "description": "Основная золотая валюта мира GODKNIFE."
   },
   {
     "id": "small_healing_potion",
-    "name": "Small Healing Potion",
+    "name": "Малое Зелье Здоровья",
     "rarity": "common",
     "type": "consumable",
     "healAmount": 60,
     "color": "#ef4444",
     "sellPrice": 50,
     "stackable": true,
-    "description": "Restores 60 Health Points instantly."
+    "description": "Мгновенно восстанавливает 60 очков здоровья."
   },
   {
     "id": "large_healing_potion",
-    "name": "Large Healing Potion",
+    "name": "Большое Зелье Здоровья",
     "rarity": "uncommon",
     "type": "consumable",
     "healAmount": 180,
     "color": "#dc2626",
     "sellPrice": 150,
     "stackable": true,
-    "description": "Restores 180 Health Points instantly."
+    "description": "Мгновенно восстанавливает 180 очков здоровья."
   },
   {
     "id": "jewel_of_bless",
-    "name": "Jewel of Bless",
+    "name": "Камень Благословения (Bless)",
     "rarity": "jewel",
     "type": "jewel",
     "color": "#38bdf8",
     "sellPrice": 10000,
     "stackable": false,
-    "description": "Sacred jewel that enchants equipment up to +6 with 100% success."
+    "description": "Священный самоцвет, улучшающий экипировку до +6 со 100% шансом."
   },
   {
     "id": "jewel_of_soul",
-    "name": "Jewel of Soul",
+    "name": "Камень Души (Soul)",
     "rarity": "jewel",
     "type": "jewel",
     "color": "#c084fc",
     "sellPrice": 8000,
     "stackable": false,
-    "description": "Mystic jewel for high level equipment enhancement."
+    "description": "Мистический камень для усиления высокоуровневой экипировки."
   },
   {
     "id": "jewel_of_chaos",
-    "name": "Jewel of Chaos",
+    "name": "Камень Хаоса (Chaos)",
     "rarity": "rare",
     "type": "jewel",
     "color": "#fb923c",
     "sellPrice": 5000,
     "stackable": false,
-    "description": "Volatile chaos gem used in the Chaos Machine for item synthesis."
+    "description": "Редкий самоцвет, используемый в Машине Хаоса для синтеза."
   },
   {
     "id": "short_sword",
-    "name": "Short Sword",
+    "name": "Короткий Меч",
     "rarity": "common",
     "type": "weapon",
     "bonusDamage": 12,
     "color": "#e2e8f0",
     "sellPrice": 300,
     "stackable": false,
-    "description": "A sturdy iron blade. Increases physical damage by 12."
+    "description": "Прочный стальной клинок. Увеличивает урон на 12."
   },
   {
     "id": "assassin_sword",
-    "name": "Assassin Sword",
+    "name": "Клинок Ассасина",
     "rarity": "rare",
     "type": "weapon",
     "bonusDamage": 26,
     "color": "#60a5fa",
     "sellPrice": 1800,
     "stackable": false,
-    "description": "Serrated steel blade favored by elite mercenaries. +26 Damage."
+    "description": "Зазубренный смертоносный меч наёмников. +26 к урону."
   },
   {
     "id": "dragon_helm",
-    "name": "Dragon Helm",
+    "name": "Шлем Дракона",
     "rarity": "epic",
     "type": "armor",
     "bonusDefense": 16,
     "color": "#f87171",
     "sellPrice": 3500,
     "stackable": false,
-    "description": "Forged in dragon scale. Adds 16 Defense."
+    "description": "Выкован из драконьей чешуи. Добавляет 16 к защите."
   },
   {
     "id": "dragon_armor",
-    "name": "Dragon Armor",
+    "name": "Доспех Дракона",
     "rarity": "epic",
     "type": "armor",
     "bonusDefense": 32,
     "color": "#f87171",
     "sellPrice": 6000,
     "stackable": false,
-    "description": "Heavy red cuirass adorned with dragon crest. Adds 32 Defense."
+    "description": "Тяжёлая кираса с драконьим гербом. Добавляет 32 к защите."
   },
   {
     "id": "dragon_gloves",
-    "name": "Dragon Gloves",
+    "name": "Перчатки Дракона",
     "rarity": "rare",
     "type": "armor",
     "bonusDefense": 12,
     "color": "#f87171",
     "sellPrice": 2200,
     "stackable": false,
-    "description": "Reinforced gauntlets providing 12 Defense."
+    "description": "Усиленные латные рукавицы. Добавляют 12 к защите."
   },
   {
     "id": "dragon_pants",
-    "name": "Dragon Pants",
+    "name": "Поножи Дракона",
     "rarity": "epic",
     "type": "armor",
     "bonusDefense": 22,
     "color": "#f87171",
     "sellPrice": 4500,
     "stackable": false,
-    "description": "Dragon scale greaves providing 22 Defense."
+    "description": "Чешуйчатые драконьи набедренники. +22 к защите."
   },
   {
     "id": "dragon_boots",
-    "name": "Dragon Boots",
+    "name": "Сапоги Дракона",
     "rarity": "rare",
     "type": "armor",
     "bonusDefense": 14,
     "color": "#f87171",
     "sellPrice": 2800,
     "stackable": false,
-    "description": "Plate boots with clawed spurs providing 14 Defense."
+    "description": "Тяжёлые сапоги с когтями. Добавляют 14 к защите."
   }
 ]

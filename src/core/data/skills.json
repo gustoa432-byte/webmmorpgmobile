@@ -1,7 +1,7 @@
 [
   {
     "id": "weapon_skill",
-    "name": "Weapon Strike",
+    "name": "Удар Оружием",
     "slot": 1,
     "manaCost": 5,
     "cooldown": 0.8,
@@ -9,12 +9,12 @@
     "range": 1.6,
     "aoeRadius": 0,
     "effectType": "single_target",
-    "description": "Powerful weapon strike dealing 135% physical damage.",
+    "description": "Мощный выпад клинком, наносящий 135% физического урона.",
     "icon": "Sword"
   },
   {
     "id": "cyclone",
-    "name": "Cyclone",
+    "name": "Циклон",
     "slot": 2,
     "manaCost": 9,
     "cooldown": 1.4,
@@ -22,12 +22,12 @@
     "range": 2.5,
     "aoeRadius": 1.8,
     "effectType": "dash",
-    "description": "Lunge forward spinning blades, damaging targets in path.",
+    "description": "Стремительный рывок с вращением клинка, поражающий врагов на пути.",
     "icon": "Wind"
   },
   {
     "id": "slash",
-    "name": "Slash",
+    "name": "Рубящий Удар",
     "slot": 3,
     "manaCost": 12,
     "cooldown": 2.0,
@@ -35,12 +35,12 @@
     "range": 1.8,
     "aoeRadius": 0,
     "effectType": "single_target",
-    "description": "Heavy vertical cleave inflicting 190% crushing damage.",
+    "description": "Тяжёлый сокрушающий вертикальный разруб с уроном 190%.",
     "icon": "Flame"
   },
   {
     "id": "twisting_slash",
-    "name": "Twisting Slash",
+    "name": "Вихревой Удар",
     "slot": 4,
     "manaCost": 18,
     "cooldown": 2.5,
@@ -48,7 +48,7 @@
     "range": 2.0,
     "aoeRadius": 3.4,
     "effectType": "aoe_circle",
-    "description": "Signature 360-degree blade tempest striking all nearby enemies.",
+    "description": "Круговой вихрь клинков на 360 градусов, поражающий всех врагов вокруг.",
     "icon": "Zap"
   }
 ]

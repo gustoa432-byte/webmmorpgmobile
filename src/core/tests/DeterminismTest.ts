@@ -35,9 +35,9 @@ export async function runCoreVerification(): Promise<VerificationReport> {
   const monsters1 = core1.entities.getEntitiesByTag('Monster');
 
   results.push({
-    name: '1. World & Entity Creation',
+    name: '1. Создание мира и сущностей',
     passed: playerId1 > 0 && monsters1.length >= 10,
-    details: `Created world with Player ID #${playerId1} and ${monsters1.length} monsters.`
+    details: `Создан мир с Игроком ID #${playerId1} и ${monsters1.length} монстрами.`
   });
 
   // --- Criterion 2: Player Movement & Collision ---
@@ -57,9 +57,9 @@ export async function runCoreVerification(): Promise<VerificationReport> {
   const movedDistance = Math.hypot(afterMovePos.x - initialPos.x, afterMovePos.y - initialPos.y);
 
   results.push({
-    name: '2. Movement & Sliding Collision',
+    name: '2. Движение и скольжение коллизий (Rapier 2D)',
     passed: movedDistance > 1.0,
-    details: `Player moved by ${movedDistance.toFixed(2)} units along X axis with collision sliding.`
+    details: `Игрок переместился на ${movedDistance.toFixed(2)} единиц по оси X со скольжением вдоль препятствий.`
   });
 
   // --- Criterion 3 & 4: Target Selection, Approach & Aggro / Combat ---
@@ -90,9 +90,9 @@ export async function runCoreVerification(): Promise<VerificationReport> {
   }
 
   results.push({
-    name: '3 & 4. Targeting, Aggro & Combat Damage',
+    name: '3 & 4. Выбор цели, аггро и боевой урон',
     passed: monsterDamaged,
-    details: `Target approached and damaged (Initial HP: ${monsterInitialHp}, HP decreased during auto-attack).`
+    details: `Цель захвачена и атакована (Начальное HP: ${monsterInitialHp}, HP снизилось при автоатаке).`
   });
 
   // --- Criterion 5: Monster Death & Loot Drop ---
@@ -112,9 +112,9 @@ export async function runCoreVerification(): Promise<VerificationReport> {
 
   const itemEntities = core1.entities.getEntitiesByTag('Item');
   results.push({
-    name: '5. Monster Death & Loot Drop',
+    name: '5. Смерть монстра и выпадение лута',
     passed: itemEntities.length > 0,
-    details: `Defeated monster and dropped ${itemEntities.length} ground item entity(ies).`
+    details: `Монстр повержен, сгенерировано ${itemEntities.length} предмет(ов) на земле по таблице дропа.`
   });
 
   // --- Criterion 6: Item Pickup ---
@@ -139,9 +139,9 @@ export async function runCoreVerification(): Promise<VerificationReport> {
   }
 
   results.push({
-    name: '6. Item Pickup to Inventory / Zen',
+    name: '6. Подбор предметов в инвентарь / Zen',
     passed: itemPicked,
-    details: `Item successfully picked up via PickupCommand and removed from world ground.`
+    details: `Предмет успешно подобран по команде PickupCommand и удален с земли.`
   });
 
   // --- Criterion 7: Skill Usage & Cooldown ---
@@ -159,16 +159,16 @@ export async function runCoreVerification(): Promise<VerificationReport> {
 
   const twistingCd = skillSet.cooldowns['twisting_slash'] ?? 0;
   results.push({
-    name: '7. Skill Usage & Cooldown',
+    name: '7. Применение умений и кулдаун',
     passed: twistingCd > 0,
-    details: `Twisting Slash activated. Mana consumed and cooldown active (${twistingCd.toFixed(2)}s remaining).`
+    details: `Навык Вихревой Удар активирован. Мана потрачена, включен откат (осталось ${twistingCd.toFixed(2)}с).`
   });
 
   // --- Criterion 8: Command-Only Authority ---
   results.push({
-    name: '8. Command-Based Architecture',
+    name: '8. Авторитетная командная архитектура',
     passed: true,
-    details: 'All state transitions (Move, SetTarget, UseSkill, Pickup, Respawn) executed exclusively through CommandQueue.'
+    details: 'Все изменения состояния мира (Move, SetTarget, UseSkill, Pickup, Respawn) выполняются исключительно через CommandQueue.'
   });
 
   // --- Criterion 9 & Section 5: Determinism Check (Run 1 vs Run 2) ---
@@ -203,9 +203,9 @@ export async function runCoreVerification(): Promise<VerificationReport> {
   const deterministicMatch = hashRun1 === hashRun2;
 
   results.push({
-    name: '9. Deterministic Headless Execution',
+    name: '9. Детерминированное выполнение без рендера',
     passed: deterministicMatch,
-    details: `Two independent 120-tick runs with seed 4242 produced identical state hash: ${hashRun1}`
+    details: `Два независимых прогона по 120 тиков с сидом 4242 выдали идентичный хэш состояния: ${hashRun1}`
   });
 
   const overallPassed = results.every(r => r.passed);

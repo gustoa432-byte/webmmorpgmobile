@@ -1,7 +1,7 @@
 [
   {
     "id": "spider",
-    "name": "Spider",
+    "name": "Паук",
     "level": 2,
     "maxHp": 45,
     "damageMin": 4,
@@ -23,7 +23,7 @@
   },
   {
     "id": "budge_dragon",
-    "name": "Budge Dragon",
+    "name": "Бадж Дракон",
     "level": 4,
     "maxHp": 85,
     "damageMin": 9,
@@ -45,7 +45,7 @@
   },
   {
     "id": "bull_fighter",
-    "name": "Bull Fighter",
+    "name": "Боец Бык",
     "level": 7,
     "maxHp": 150,
     "damageMin": 16,
@@ -68,7 +68,7 @@
   },
   {
     "id": "hound",
-    "name": "Hound",
+    "name": "Адская Гончая",
     "level": 10,
     "maxHp": 210,
     "damageMin": 25,
@@ -90,7 +90,7 @@
   },
   {
     "id": "skeleton",
-    "name": "Skeleton Warrior",
+    "name": "Скелет-Воин",
     "level": 14,
     "maxHp": 340,
     "damageMin": 38,

@@ -1,12 +1,12 @@
 {
   "id": "lorencia",
-  "name": "Lorencia Town & Plains",
+  "name": "Лоренсия: Город и Окрестности",
   "width": 48,
   "height": 48,
   "cellSize": 1.0,
   "spawnPoint": {
     "x": 24,
-    "y": 27.5
+    "y": 28.5
   },
   "safeZoneRadius": 6.5,
   "obstacles": [

@@ -40,14 +40,31 @@ export class MovementSystem {
       if (movement.desiredDirection) {
         const dir = movement.desiredDirection;
         const len = Math.hypot(dir.x, dir.y);
-        if (len > 0.001) {
+        if (len >= 0.01) {
           movement.velocity = {
             x: (dir.x / len) * movement.speed,
             y: (dir.y / len) * movement.speed
           };
           movement.movementState = 'running';
           transform.rotation = Math.atan2(dir.y, dir.x);
+
+          // Reset combat target if manual movement carries entity beyond attackRange * 2.5
+          if (hasCombatTarget && combat) {
+            const targetTrans = this.entities.getComponent(combat.targetEntityId!, 'Transform');
+            if (targetTrans) {
+              const distToTarget = Math.hypot(
+                targetTrans.position.x - transform.position.x,
+                targetTrans.position.y - transform.position.y
+              );
+              if (distToTarget > combat.attackRange * 2.5) {
+                combat.targetEntityId = null;
+              }
+            } else {
+              combat.targetEntityId = null;
+            }
+          }
         } else {
+          movement.desiredDirection = null;
           movement.velocity = { x: 0, y: 0 };
           movement.movementState = 'idle';
         }

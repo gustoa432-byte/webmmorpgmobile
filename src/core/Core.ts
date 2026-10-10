@@ -85,10 +85,10 @@ export class Core {
   private setupWorld(): void {
     const mapConf = this.configs.getMap();
 
-    // Setup safe zone at town center (fountain area)
+    // Setup safe zone at town center (fountain area at 24, 24)
     const safeRadiusTiles = Math.floor(mapConf.safeZoneRadius / mapConf.cellSize);
-    const centerGx = Math.floor(mapConf.spawnPoint.x / mapConf.cellSize);
-    const centerGy = Math.floor(mapConf.spawnPoint.y / mapConf.cellSize);
+    const centerGx = 24;
+    const centerGy = 24;
 
     for (let gy = centerGy - safeRadiusTiles; gy <= centerGy + safeRadiusTiles; gy++) {
       for (let gx = centerGx - safeRadiusTiles; gx <= centerGx + safeRadiusTiles; gx++) {

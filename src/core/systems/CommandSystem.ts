@@ -79,38 +79,20 @@ export class CommandSystem {
     switch (cmd.type) {
       case 'Move': {
         const movement = this.entities.getComponent(entityId, 'Movement');
-        const combat = this.entities.getComponent(entityId, 'Combat');
 
         if (movement) {
-          if (cmd.direction) {
-            // Directional joystick / keyboard movement
-            const len = Math.hypot(cmd.direction.x, cmd.direction.y);
-            if (len > 0.001) {
-              const nx = cmd.direction.x / len;
-              const ny = cmd.direction.y / len;
-              movement.desiredDirection = { x: nx, y: ny };
-              movement.targetPosition = null;
-
-              // Disengage target if actively moving away or out of range
-              if (combat && combat.targetEntityId !== null) {
-                const targetTrans = this.entities.getComponent(combat.targetEntityId, 'Transform');
-                const pTrans = this.entities.getComponent(entityId, 'Transform');
-                if (targetTrans && pTrans) {
-                  const toTargetX = targetTrans.position.x - pTrans.position.x;
-                  const toTargetY = targetTrans.position.y - pTrans.position.y;
-                  const dist = Math.hypot(toTargetX, toTargetY);
-                  const dot = nx * toTargetX + ny * toTargetY;
-                  if (dot < 0 || dist > 8.0) {
-                    combat.targetEntityId = null;
-                    this.eventBus.emit({
-                      type: 'OnTargetChanged',
-                      entityId,
-                      targetId: null
-                    });
-                  }
-                } else {
-                  combat.targetEntityId = null;
-                }
+          if (cmd.direction !== undefined) {
+            if (cmd.direction !== null) {
+              const len = Math.hypot(cmd.direction.x, cmd.direction.y);
+              if (len >= 0.01) {
+                const nx = cmd.direction.x / len;
+                const ny = cmd.direction.y / len;
+                movement.desiredDirection = { x: nx, y: ny };
+                movement.targetPosition = null;
+              } else {
+                movement.desiredDirection = null;
+                movement.velocity = { x: 0, y: 0 };
+                movement.movementState = 'idle';
               }
             } else {
               movement.desiredDirection = null;

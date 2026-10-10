@@ -13,6 +13,8 @@ interface GameCanvasProps {
   showGrid: boolean;
   onSelectEntity: (id: EntityId | null) => void;
   selectedEntityId: EntityId | null;
+  isPaused?: boolean;
+  hardCamera?: boolean;
 }
 
 interface FloatingText {
@@ -39,7 +41,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   core,
   showGrid,
   onSelectEntity,
-  selectedEntityId
+  selectedEntityId,
+  isPaused = false,
+  hardCamera = false
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -47,6 +51,20 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const floatingTextsRef = useRef<FloatingText[]>([]);
   const skillVfxRef = useRef<SkillVfx[]>([]);
   const nextFxId = useRef<number>(1);
+
+  // Keep a ref to isPaused and hardCamera to avoid stale callbacks
+  const isPausedRef = useRef(isPaused);
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+    if (!isPaused) {
+      lastTimeRef.current = performance.now();
+    }
+  }, [isPaused]);
+
+  const hardCameraRef = useRef(hardCamera);
+  useEffect(() => {
+    hardCameraRef.current = hardCamera;
+  }, [hardCamera]);
 
   // Camera offset in world units
   const cameraRef = useRef<{ x: number; y: number }>({ x: 24, y: 24 });
@@ -58,7 +76,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       if (event.type === 'OnEntityDamaged') {
         floatingTextsRef.current.push({
           id: nextFxId.current++,
-          text: event.isCrit ? `CRIT ${event.damage}!` : `${event.damage}`,
+          text: event.isCrit ? `КРИТ ${event.damage}!` : `${event.damage}`,
           x: event.position.x + (Math.random() - 0.5) * 0.4,
           y: event.position.y - 0.5,
           color: event.isCrit ? '#38bdf8' : event.sourceId === core.getPlayerId() ? '#facc15' : '#ef4444',
@@ -78,7 +96,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       } else if (event.type === 'OnLevelUp') {
         floatingTextsRef.current.push({
           id: nextFxId.current++,
-          text: `LEVEL UP! (${event.newLevel})`,
+          text: `УРОВЕНЬ ПОВЫШЕН! (${event.newLevel})`,
           x: 24,
           y: 23,
           color: '#eab308',
@@ -100,11 +118,15 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const dt = (now - lastTimeRef.current) / 1000;
+    const dt = Math.min((now - lastTimeRef.current) / 1000, 0.1);
     lastTimeRef.current = now;
 
     // Smoothly step simulation & retrieve interpolation factor alpha
-    const alpha = core.step(dt);
+    // When paused, simulation does NOT step (core.step(dt) is not called)
+    let alpha = 1.0;
+    if (!isPausedRef.current) {
+      alpha = core.step(dt);
+    }
 
     // Update camera smoothly following player
     const playerId = core.getPlayerId();
@@ -112,8 +134,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     if (playerTransform) {
       const px = playerTransform.previousPosition.x + (playerTransform.position.x - playerTransform.previousPosition.x) * alpha;
       const py = playerTransform.previousPosition.y + (playerTransform.position.y - playerTransform.previousPosition.y) * alpha;
-      cameraRef.current.x += (px - cameraRef.current.x) * 0.15;
-      cameraRef.current.y += (py - cameraRef.current.y) * 0.15;
+      const smoothing = hardCameraRef.current ? 1.0 : 0.30;
+      cameraRef.current.x += (px - cameraRef.current.x) * smoothing;
+      cameraRef.current.y += (py - cameraRef.current.y) * smoothing;
     }
 
     const width = canvas.width;
@@ -167,8 +190,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.stroke();
     }
 
-    // Draw Safe Zone (Town square with fountain)
-    const fountainScreen = worldToScreen(mapConf.spawnPoint.x, mapConf.spawnPoint.y);
+    // Draw Safe Zone (Town square centered at 24, 24)
+    const townCenter = { x: 24, y: 24 };
+    const fountainScreen = worldToScreen(townCenter.x, townCenter.y);
     const safeRadiusPx = mapConf.safeZoneRadius * zoom;
 
     // Outer safe aura
@@ -197,7 +221,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Central Town Fountain
+    // Central Town Fountain at (24, 24)
     ctx.fillStyle = '#0284c7';
     ctx.beginPath();
     ctx.arc(fountainScreen.sx, fountainScreen.sy, 1.8 * zoom, 0, Math.PI * 2);
@@ -212,8 +236,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     ctx.arc(fountainScreen.sx, fountainScreen.sy, 0.6 * zoom, 0, Math.PI * 2);
     ctx.fill();
 
-    // Obstacles
-    for (const obs of mapConf.obstacles) {
+    // Other Obstacles (skip obs 0 which is the central fountain)
+    for (let i = 1; i < mapConf.obstacles.length; i++) {
+      const obs = mapConf.obstacles[i];
       const obsScreen = worldToScreen(obs.x, obs.y);
       ctx.fillStyle = '#475569';
       ctx.beginPath();
@@ -363,7 +388,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#38bdf8';
-        ctx.fillText(`Dark Knight (Lv.${playerComp?.level ?? 1})`, screenPos.sx, screenPos.sy - radiusPx - 16);
+        ctx.fillText(`Темный Рыцарь (Ур.${playerComp?.level ?? 1})`, screenPos.sx, screenPos.sy - radiusPx - 16);
 
         // Player Health Bar
         if (health) {
@@ -398,13 +423,25 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           }
         }
 
-        // Selection Reticle if clicked
-        if (selectedEntityId === id) {
+        // Selection Reticle & Arrow Marker if targeted or clicked
+        const playerCombat = core.entities.getComponent(core.getPlayerId(), 'Combat');
+        const isTargeted = selectedEntityId === id || playerCombat?.targetEntityId === id;
+        if (isTargeted) {
+          // Pulsing target circle
           ctx.strokeStyle = '#ef4444';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 2.5;
           ctx.beginPath();
-          ctx.arc(screenPos.sx, screenPos.sy, radiusPx * 1.4, 0, Math.PI * 2);
+          ctx.arc(screenPos.sx, screenPos.sy, radiusPx * 1.5, 0, Math.PI * 2);
           ctx.stroke();
+
+          // Classic Mu Online Red Target Arrow above monster
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.moveTo(screenPos.sx, screenPos.sy - radiusPx - 20);
+          ctx.lineTo(screenPos.sx - 6, screenPos.sy - radiusPx - 28);
+          ctx.lineTo(screenPos.sx + 6, screenPos.sy - radiusPx - 28);
+          ctx.closePath();
+          ctx.fill();
         }
 
         // Shadow
@@ -426,7 +463,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.font = '10px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#f8fafc';
-        ctx.fillText(`${monsterConf?.name ?? 'Monster'} Lv.${monsterConf?.level ?? 1}`, screenPos.sx, screenPos.sy - radiusPx - 12);
+        ctx.fillText(`${monsterConf?.name ?? 'Монстр'} Ур.${monsterConf?.level ?? 1}`, screenPos.sx, screenPos.sy - radiusPx - 12);
 
         // Monster HP Bar
         const barW = 34;
@@ -442,7 +479,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     // 4. Draw Active Skill VFX
     for (let i = skillVfxRef.current.length - 1; i >= 0; i--) {
       const vfx = skillVfxRef.current[i];
-      vfx.age += dt;
+      if (!isPausedRef.current) {
+        vfx.age += dt;
+      }
 
       const progress = vfx.age / vfx.maxAge;
       if (progress >= 1) {
@@ -482,7 +521,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     // 5. Draw Floating Damage & Combat Numbers
     for (let i = floatingTextsRef.current.length - 1; i >= 0; i--) {
       const item = floatingTextsRef.current[i];
-      item.age += dt * 1.2;
+      if (!isPausedRef.current) {
+        item.age += dt * 1.2;
+      }
 
       if (item.age >= 1) {
         floatingTextsRef.current.splice(i, 1);
@@ -537,10 +578,25 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     };
   }, [renderFrame]);
 
-  // Click & Tap Handling: Select target or move!
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const pointerDownPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const lastTapPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const lastTapTimeRef = useRef<number>(0);
+
+  // Click & Pointer Tap Handling (Single Tap & Double Tap for Mobile)
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Reject long swipes / drags (fixed camera)
+    const moveDist = Math.hypot(
+      e.clientX - pointerDownPosRef.current.x,
+      e.clientY - pointerDownPosRef.current.y
+    );
+    if (moveDist > 15) return;
 
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -553,10 +609,62 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const worldY = camY + (mouseY - canvas.height / 2) / zoom;
 
     const playerId = core.getPlayerId();
+    const now = performance.now();
 
-    // Check if clicked an entity (Monster or Item)
+    // Check for Double-Tap (< 380ms within ~35px) -> Action: Pickup item
+    const tapDist = Math.hypot(
+      e.clientX - lastTapPosRef.current.x,
+      e.clientY - lastTapPosRef.current.y
+    );
+    const isDoubleTap = (now - lastTapTimeRef.current < 380) && (tapDist < 35);
+
+    if (isDoubleTap) {
+      lastTapTimeRef.current = 0; // Consume double tap
+
+      // Find dropped items in world
+      const items = core.entities.getEntitiesByTag('Item');
+      let targetItemId: EntityId | undefined;
+      let closestItemDist = 4.0;
+
+      for (const itId of items) {
+        const trans = core.entities.getComponent(itId, 'Transform');
+        if (!trans) continue;
+        const d = Math.hypot(trans.position.x - worldX, trans.position.y - worldY);
+        if (d < closestItemDist) {
+          closestItemDist = d;
+          targetItemId = itId;
+        }
+      }
+
+      // Enqueue pickup command
+      core.enqueueCommand({
+        type: 'Pickup',
+        entityId: playerId,
+        targetItemId
+      });
+
+      // Visual feedback: Floating "ПОДНЯТО!" message
+      floatingTextsRef.current.push({
+        id: nextFxId.current++,
+        text: 'ПОДНЯТО!',
+        x: worldX,
+        y: worldY,
+        color: '#facc15',
+        isCrit: true,
+        age: 0
+      });
+
+      return;
+    }
+
+    // Register single tap
+    lastTapTimeRef.current = now;
+    lastTapPosRef.current = { x: e.clientX, y: e.clientY };
+
+    // 1. Single Tap on Monster / NPC: Select target -> approach -> auto-attack!
     const monsters = core.entities.getEntitiesByTag('Monster');
     let clickedMonsterId: EntityId | null = null;
+    let closestMonsterDist = 1.2; // Generous tap target for mobile touch
 
     for (const mId of monsters) {
       const trans = core.entities.getComponent(mId, 'Transform');
@@ -564,14 +672,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       if (!trans || health?.isDead) continue;
 
       const dist = Math.hypot(trans.position.x - worldX, trans.position.y - worldY);
-      if (dist <= 0.8) {
+      if (dist < closestMonsterDist) {
+        closestMonsterDist = dist;
         clickedMonsterId = mId;
-        break;
       }
     }
 
     if (clickedMonsterId !== null) {
-      // Tap on monster: Select target and automatically begin approach/auto-attack!
       onSelectEntity(clickedMonsterId);
       core.enqueueCommand({
         type: 'SetTarget',
@@ -581,14 +688,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       return;
     }
 
-    // Check if clicked ground item
+    // 2. Single Tap on Ground Item: Pickup
     const items = core.entities.getEntitiesByTag('Item');
     for (const itId of items) {
       const trans = core.entities.getComponent(itId, 'Transform');
       if (!trans) continue;
       const dist = Math.hypot(trans.position.x - worldX, trans.position.y - worldY);
-      if (dist <= 1.0) {
-        // Enqueue pickup
+      if (dist <= 1.2) {
         core.enqueueCommand({
           type: 'Pickup',
           entityId: playerId,
@@ -598,7 +704,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
 
-    // Otherwise: Point-and-click move to position
+    // 3. Single Tap on empty ground: deselect or point-and-click move
     onSelectEntity(null);
     core.enqueueCommand({
       type: 'SetTarget',
@@ -616,8 +722,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     <div className="relative w-full h-full select-none overflow-hidden bg-slate-950">
       <canvas
         ref={canvasRef}
-        onClick={handleCanvasClick}
-        className="w-full h-full block cursor-crosshair touch-none"
+        tabIndex={0}
+        onPointerDown={handlePointerDown}
+        onPointerUp={e => {
+          handlePointerUp(e);
+          canvasRef.current?.focus();
+        }}
+        className="w-full h-full block cursor-crosshair touch-none focus:outline-none"
       />
     </div>
   );

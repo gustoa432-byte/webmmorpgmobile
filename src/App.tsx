@@ -7,8 +7,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Core } from './core/Core';
 import { EntityId } from './core/types';
 import { GameCanvas } from './presentation/GameCanvas';
-import { SkillHotbar } from './presentation/SkillHotbar';
 import { VirtualJoystick } from './presentation/VirtualJoystick';
+import { ActionZone } from './presentation/ActionZone';
 import { EngineInspector } from './presentation/EngineInspector';
 import { InventoryModal } from './presentation/InventoryModal';
 import { VerificationModal } from './presentation/VerificationModal';
@@ -16,12 +16,16 @@ import {
   Grid3X3,
   Layers,
   ShieldAlert,
-  Play,
-  Pause,
   RotateCcw,
-  Sparkles,
-  Info,
-  Maximize2
+  RefreshCw,
+  Camera,
+  Coins,
+  HeartPulse,
+  Backpack,
+  Menu,
+  X,
+  HelpCircle,
+  Sparkles
 } from 'lucide-react';
 
 export default function App() {
@@ -32,11 +36,27 @@ export default function App() {
   const core = coreRef.current;
 
   const [showGrid, setShowGrid] = useState(false);
+  const [hardCamera, setHardCamera] = useState(false);
   const [showInspector, setShowInspector] = useState(true);
   const [showInventory, setShowInventory] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [selectedEntityId, setSelectedEntityId] = useState<EntityId | null>(null);
+
+  const [playerVitals, setPlayerVitals] = useState({
+    level: 1,
+    currentHp: 110,
+    maxHp: 110,
+    isDead: false,
+    currentMana: 20,
+    maxMana: 20,
+    currentExp: 0,
+    expToNextLevel: 100,
+    zen: 500,
+    potionCount: 0
+  });
+
   const [targetInfo, setTargetInfo] = useState<{
     id: number;
     name: string;
@@ -45,31 +65,55 @@ export default function App() {
     maxHp: number;
   } | null>(null);
 
-  // Poll player's combat target for top HUD
+  // Poll player vitals & target info smoothly for Top HUD (Zone 2)
   useEffect(() => {
     const interval = setInterval(() => {
       const playerId = core.getPlayerId();
+      const hp = core.entities.getComponent(playerId, 'Health');
+      const skillSet = core.entities.getComponent(playerId, 'SkillSet');
+      const playerComp = core.entities.getComponent(playerId, 'Player');
+      const inv = core.entities.getComponent(playerId, 'Inventory');
+
+      if (hp && skillSet && playerComp && inv) {
+        const pots = inv.items.filter(i => i.templateId.includes('potion'));
+        const totalPots = pots.reduce((sum, p) => sum + p.count, 0);
+
+        setPlayerVitals({
+          level: playerComp.level,
+          currentHp: Math.floor(hp.currentHp),
+          maxHp: hp.maxHp,
+          isDead: hp.isDead,
+          currentMana: Math.floor(skillSet.currentMana),
+          maxMana: skillSet.maxMana,
+          currentExp: playerComp.currentExp,
+          expToNextLevel: playerComp.expToNextLevel,
+          zen: inv.zen,
+          potionCount: totalPots
+        });
+      }
+
+      // Check current combat target
       const combat = core.entities.getComponent(playerId, 'Combat');
       const targetId = combat?.targetEntityId ?? selectedEntityId;
 
       if (targetId && core.entities.hasEntity(targetId)) {
-        const hp = core.entities.getComponent(targetId, 'Health');
+        const targetHp = core.entities.getComponent(targetId, 'Health');
         const ai = core.entities.getComponent(targetId, 'AI');
         const monsterConf = ai ? core.configs.getMonster(ai.monsterTemplateId) : null;
 
-        if (hp && !hp.isDead) {
+        if (targetHp && !targetHp.isDead) {
           setTargetInfo({
             id: targetId,
-            name: monsterConf?.name ?? `Entity #${targetId}`,
+            name: monsterConf?.name ?? `Сущность #${targetId}`,
             level: monsterConf?.level ?? 1,
-            currentHp: Math.floor(hp.currentHp),
-            maxHp: hp.maxHp
+            currentHp: Math.floor(targetHp.currentHp),
+            maxHp: targetHp.maxHp
           });
           return;
         }
       }
       setTargetInfo(null);
-    }, 60);
+    }, 50);
 
     return () => clearInterval(interval);
   }, [core, selectedEntityId]);
@@ -88,77 +132,166 @@ export default function App() {
     setTargetInfo(null);
   };
 
+  const triggerPotion = () => {
+    core.enqueueCommand({
+      type: 'UsePotion',
+      entityId: core.getPlayerId()
+    });
+  };
+
+  const triggerRespawn = () => {
+    core.enqueueCommand({
+      type: 'Respawn',
+      entityId: core.getPlayerId()
+    });
+  };
+
   return (
     <div className="flex h-screen w-screen bg-slate-950 text-slate-100 font-sans overflow-hidden select-none">
-      {/* Main Game Screen Area */}
+      {/* Main Game Screen Area (Zones 1-5) */}
       <div className="relative flex-1 h-full flex flex-col min-w-0">
-        {/* Top Navigation & Status Bar */}
-        <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 py-2 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 pointer-events-auto">
-          {/* Title & Mu Season 1 badge */}
-          <div className="flex items-center gap-3">
+        {/* Zone 1 & 2: System Safe-Area & Top Game HUD Panel */}
+        <header className="absolute top-0 left-0 right-0 z-30 flex flex-col bg-slate-950 border-b border-slate-800 pointer-events-auto pt-[env(safe-area-inset-top,0px)]">
+          <div className="flex items-center justify-between px-3 py-1.5 min-h-[52px]">
+            {/* Left: Player Avatar / Level & Dual HP/MP Bars */}
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
-              <h1 className="font-bold text-sm tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 bg-clip-text text-transparent">
-                Mu Online Core Engine v1.0
-              </h1>
+              {/* Level / DK Badge */}
+              <div className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-slate-900 border border-amber-500/60 shadow-md shrink-0">
+                <span className="text-[9px] font-mono text-amber-400 font-bold leading-tight">DK</span>
+                <span className="text-[10px] font-bold text-white leading-tight">Ур.{playerVitals.level}</span>
+              </div>
+
+              {/* Stacked HP / MP Bars with numbers */}
+              <div className="flex flex-col gap-1 w-28 sm:w-36">
+                {/* HP */}
+                <div className="flex items-center gap-1.5">
+                  <div className="relative flex-1 h-3.5 bg-slate-900 rounded-sm overflow-hidden border border-red-950">
+                    <div
+                      style={{ width: `${Math.max(0, (playerVitals.currentHp / playerVitals.maxHp) * 100)}%` }}
+                      className="h-full bg-gradient-to-r from-red-600 to-rose-500 transition-all duration-100"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold text-white drop-shadow">
+                      {playerVitals.currentHp}/{playerVitals.maxHp} HP
+                    </span>
+                  </div>
+                </div>
+
+                {/* MP */}
+                <div className="flex items-center gap-1.5">
+                  <div className="relative flex-1 h-3.5 bg-slate-900 rounded-sm overflow-hidden border border-cyan-950">
+                    <div
+                      style={{ width: `${Math.max(0, (playerVitals.currentMana / playerVitals.maxMana) * 100)}%` }}
+                      className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-100"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold text-white drop-shadow">
+                      {playerVitals.currentMana}/{playerVitals.maxMana} MP
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700">
-              Season 1 Lorencia
-            </span>
-            <span className="hidden md:inline-block px-2 py-0.5 rounded-full bg-emerald-950/60 text-[10px] font-mono text-emerald-400 border border-emerald-800/60">
-              Rapier 2D WASM
-            </span>
+
+            {/* Center: Zen Gold & Location */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 border border-amber-500/40 rounded-lg text-amber-300 font-mono text-xs font-bold shadow-inner">
+                <Coins className="w-3.5 h-3.5 text-amber-400" />
+                <span>{playerVitals.zen.toLocaleString()}</span>
+              </div>
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700">
+                Лоренсия
+              </span>
+            </div>
+
+            {/* Right: Quick Action Buttons (Min 44x44px touch targets) */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Quick Potion [Q] button */}
+              <button
+                onClick={triggerPotion}
+                disabled={playerVitals.potionCount <= 0 || playerVitals.isDead}
+                title="Выпить зелье здоровья [Q]"
+                className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-red-500/60 text-red-400 transition shadow-md disabled:opacity-50"
+              >
+                <HeartPulse className="w-5 h-5 text-red-400" />
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.2 bg-red-600 text-white font-mono text-[9px] font-bold rounded-full">
+                  {playerVitals.potionCount}
+                </span>
+              </button>
+
+              {/* Inventory [I] button */}
+              <button
+                onClick={() => setShowInventory(true)}
+                title="Открыть инвентарь [I]"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-amber-500/50 text-amber-300 transition shadow-md"
+              >
+                <Backpack className="w-5 h-5 text-amber-400" />
+              </button>
+
+              {/* Desktop-only Direct Action Buttons (Hidden on mobile) */}
+              <div className="hidden lg:flex items-center gap-1.5">
+                <button
+                  onClick={() => setHardCamera(!hardCamera)}
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>{hardCamera ? 'Камера 1.0' : 'Камера 0.3'}</span>
+                </button>
+                <button
+                  onClick={() => setShowGrid(!showGrid)}
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
+                >
+                  <Grid3X3 className="w-3.5 h-3.5" />
+                  <span>Сетка</span>
+                </button>
+                <button
+                  onClick={() => setShowVerification(true)}
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg border border-emerald-500/50 bg-emerald-950 text-emerald-300 hover:bg-emerald-900"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>ТЗ</span>
+                </button>
+                <button
+                  onClick={() => setShowInspector(!showInspector)}
+                  className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg border transition ${
+                    showInspector ? 'bg-slate-800 border-amber-400 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-300'
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Инспектор</span>
+                </button>
+              </div>
+
+              {/* Mobile Menu / Settings Button */}
+              <button
+                onClick={() => setShowMobileMenu(true)}
+                title="Меню и Настройки"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-slate-700 text-slate-300 transition shadow-md lg:hidden"
+              >
+                <Menu className="w-5 h-5 text-slate-300" />
+              </button>
+            </div>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowGrid(!showGrid)}
-              title="Toggle .att Walkability Grid"
-              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg border transition ${
-                showGrid
-                  ? 'bg-amber-500/20 border-amber-400 text-amber-300'
-                  : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
-              }`}
-            >
-              <Grid3X3 className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Walk Grid</span>
-            </button>
-
-            <button
-              onClick={() => setShowVerification(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg border border-emerald-500/50 bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-300 transition font-medium"
-            >
-              <ShieldAlert className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Verify DoD</span>
-            </button>
-
-            <button
-              onClick={() => setShowInspector(!showInspector)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg border transition ${
-                showInspector
-                  ? 'bg-slate-800 border-amber-400 text-amber-300'
-                  : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Inspector</span>
-            </button>
+          {/* Slim Exp Bar along the bottom of the Top HUD */}
+          <div className="w-full h-1 bg-slate-900 relative">
+            <div
+              style={{ width: `${Math.min(100, Math.max(0, (playerVitals.currentExp / playerVitals.expToNextLevel) * 100))}%` }}
+              className="h-full bg-gradient-to-r from-amber-600 via-yellow-400 to-amber-300 transition-all duration-300"
+            />
           </div>
         </header>
 
-        {/* Target Frame (Top Center) */}
+        {/* Target Frame (Top Center below Zone 2) */}
         {targetInfo && (
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center bg-slate-900/90 border border-red-500/50 px-4 py-1.5 rounded-xl backdrop-blur-md shadow-2xl animate-in fade-in zoom-in-95 pointer-events-none">
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center bg-slate-900 border border-red-500/60 px-4 py-1.5 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 pointer-events-none">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-100">
-              <span className="text-red-400">Target:</span>
+              <span className="text-red-400 font-mono">Цель:</span>
               <span>{targetInfo.name}</span>
-              <span className="px-1.5 py-0.2 bg-red-950 border border-red-800 text-red-300 rounded text-[10px]">
-                Lv.{targetInfo.level}
+              <span className="px-1.5 py-0.2 bg-red-950 border border-red-800 text-red-300 rounded text-[10px] font-mono">
+                Ур.{targetInfo.level}
               </span>
             </div>
             {/* Target HP Bar */}
-            <div className="w-48 bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800 mt-1">
+            <div className="w-44 sm:w-52 bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800 mt-1">
               <div
                 style={{
                   width: `${Math.max(0, (targetInfo.currentHp / targetInfo.maxHp) * 100)}%`
@@ -172,47 +305,58 @@ export default function App() {
           </div>
         )}
 
-        {/* Interactive Game Canvas */}
+        {/* Zone 3: Interactive Game Canvas (World Field - Taps, Double-tap Pickup) */}
         <div className="flex-1 w-full h-full">
           <GameCanvas
             core={core}
             showGrid={showGrid}
             onSelectEntity={setSelectedEntityId}
             selectedEntityId={selectedEntityId}
+            isPaused={isPaused}
+            hardCamera={hardCamera}
           />
         </div>
 
-        {/* In-Game Controls Overlay (Bottom) */}
-        <div className="absolute bottom-4 left-4 right-4 z-20 flex items-end justify-between pointer-events-none">
-          {/* Virtual Joystick (Bottom Left) */}
+        {/* In-Game Controls Overlay (Bottom Half - Portrait Priority) */}
+        <div className="absolute bottom-4 left-4 right-4 z-20 flex items-end justify-between pointer-events-none pb-[env(safe-area-inset-bottom,0px)]">
+          {/* Zone 4: Left Virtual Joystick (Movement) */}
           <div className="pointer-events-auto">
             <VirtualJoystick core={core} />
           </div>
 
-          {/* Skill Hotbar & Actions (Bottom Center) */}
-          <div className="pointer-events-auto">
-            <SkillHotbar
-              core={core}
-              onOpenInventory={() => setShowInventory(true)}
-            />
+          {/* Respawn Button if dead (Center Prompt) */}
+          {playerVitals.isDead && (
+            <div className="pointer-events-auto mb-6 animate-bounce">
+              <button
+                onClick={triggerRespawn}
+                className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xl border-2 border-red-400 transition"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Возродиться в Лоренсии
+              </button>
+            </div>
+          )}
+
+          {/* Desktop Controls Hint (Hidden on mobile) */}
+          <div className="hidden lg:flex flex-col gap-1 p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-400 font-mono pointer-events-none">
+            <div className="text-amber-400 font-semibold mb-0.5">Управление (ПК):</div>
+            <div>• Клик по мобу: Автоатака</div>
+            <div>• Дабл-клик: Подобрать предмет</div>
+            <div>• WASD / Джойстик: Движение</div>
+            <div>• 1-4 / Свайпы: Скиллы</div>
+            <div>• Q: Зелье HP | Пробел: Лут</div>
           </div>
 
-          {/* Controls Hint / Guide (Bottom Right) */}
-          <div className="hidden lg:flex flex-col gap-1 p-2.5 bg-slate-950/70 border border-slate-800/80 rounded-xl backdrop-blur-md text-[11px] text-slate-400 font-mono pointer-events-none">
-            <div className="text-amber-400 font-semibold mb-0.5">Controls:</div>
-            <div>• Click ground: Move</div>
-            <div>• Click mob: Target & Attack</div>
-            <div>• WASD / Stick: Joystick Move</div>
-            <div>• 1-4: Class Skills</div>
-            <div>• Space: Pick Up Item/Zen</div>
-            <div>• Q: Use Healing Potion</div>
+          {/* Zone 5: Right Action Zone (Gestures: Swipe ↑/→/↓/← & Hold) */}
+          <div className="pointer-events-auto">
+            <ActionZone core={core} />
           </div>
         </div>
       </div>
 
-      {/* Right Collapsible Inspector Drawer */}
+      {/* Desktop-Only Inspector Drawer (Hidden on mobile phones as requested) */}
       {showInspector && (
-        <div className="w-80 lg:w-96 h-full shrink-0 z-30 transition-all shadow-2xl">
+        <div className="hidden lg:block w-80 lg:w-96 h-full shrink-0 z-30 transition-all shadow-2xl">
           <EngineInspector
             core={core}
             isPaused={isPaused}
@@ -237,6 +381,119 @@ export default function App() {
         isOpen={showVerification}
         onClose={() => setShowVerification(false)}
       />
+
+      {/* Mobile Menu Modal (Settings & Help) */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 animate-in fade-in lg:hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col text-slate-100">
+            {/* Header */}
+            <div className="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Menu className="w-4 h-4 text-amber-400" />
+                <h3 className="font-bold text-sm text-slate-100">Меню GODKNIFE</h3>
+              </div>
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Menu options */}
+            <div className="p-4 space-y-3">
+              {/* Guide Card */}
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1 text-xs">
+                <div className="font-bold text-amber-300 flex items-center gap-1.5 mb-1">
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  Управление на смартфоне:
+                </div>
+                <div className="text-slate-300 leading-relaxed space-y-0.5 text-[11px]">
+                  <div>• <b>Левый стик:</b> Бег (отпустил = остановка)</div>
+                  <div>• <b>Тап по мобу:</b> Выбор цели + автоатака</div>
+                  <div>• <b>Дабл-тап по земле:</b> Поднять предмет</div>
+                  <div>• <b>Action-зона (справа):</b> Свайп в 4 стороны (↑, →, ↓, ←) для скиллов</div>
+                  <div>• <b>Удержание Action-зоны:</b> Меню смены скиллов</div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setHardCamera(!hardCamera);
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold"
+                >
+                  <span className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-slate-400" />
+                    Режим камеры
+                  </span>
+                  <span className="text-amber-400 font-mono">
+                    {hardCamera ? '1.0 (Жёсткая)' : '0.3 (Плавная)'}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowGrid(!showGrid);
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold"
+                >
+                  <span className="flex items-center gap-2">
+                    <Grid3X3 className="w-4 h-4 text-slate-400" />
+                    Сетка ходьбы (.att)
+                  </span>
+                  <span className={showGrid ? 'text-emerald-400 font-mono' : 'text-slate-500 font-mono'}>
+                    {showGrid ? 'ВКЛ' : 'ВЫКЛ'}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowVerification(true);
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/50 rounded-xl text-xs font-semibold text-emerald-300"
+                >
+                  <span className="flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-emerald-400" />
+                    Проверка 9 пунктов ТЗ
+                  </span>
+                  <span>Открыть</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    resetWorld();
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-red-300"
+                >
+                  <span className="flex items-center gap-2">
+                    <RotateCcw className="w-4 h-4 text-red-400" />
+                    Перезапустить Лоренсию
+                  </span>
+                  <span>Сброс</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-4 py-2 bg-slate-950 border-t border-slate-800 flex justify-end">
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition"
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

@@ -66,13 +66,13 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ core, isOpen, on
   const expPct = Math.min(100, Math.floor((player.currentExp / player.expToNextLevel) * 100));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <div className="bg-slate-900 border border-amber-500/60 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-4 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-amber-400" />
-            <h2 className="text-base font-bold text-slate-100">Character & Inventory</h2>
+            <h2 className="text-base font-bold text-slate-100">Персонаж и Инвентарь</h2>
           </div>
           <button
             onClick={onClose}
@@ -85,10 +85,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ core, isOpen, on
         {/* Content */}
         <div className="p-4 overflow-y-auto space-y-4">
           {/* Character Summary */}
-          <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl flex items-center justify-between">
+          <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
             <div>
-              <div className="text-base font-bold text-amber-300">Dark Knight</div>
-              <div className="text-xs text-slate-400">Level {player.level} (Mu Season 1)</div>
+              <div className="text-base font-bold text-amber-300">Темный Рыцарь</div>
+              <div className="text-xs text-slate-400">Уровень {player.level} • GODKNIFE</div>
             </div>
             <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg">
               <Coins className="w-4 h-4 text-amber-400" />
@@ -101,7 +101,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ core, isOpen, on
           {/* Exp Bar */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-slate-400 font-mono">
-              <span>Experience</span>
+              <span>Опыт</span>
               <span>
                 {player.currentExp} / {player.expToNextLevel} ({expPct}%)
               </span>
@@ -115,22 +115,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ core, isOpen, on
           </div>
 
           {/* Stats Distribution */}
-          <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-2">
+          <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-300">Attribute Stats</span>
+              <span className="text-xs font-bold text-slate-300">Характеристики персонажа</span>
               {player.statPoints > 0 && (
                 <span className="text-xs font-bold text-amber-400 animate-pulse">
-                  Points Available: {player.statPoints}
+                  Свободных очков: {player.statPoints}
                 </span>
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs font-mono">
               {[
-                { name: 'Strength (STR)', key: 'strength' as const, desc: 'Increases attack damage' },
-                { name: 'Agility (AGI)', key: 'agility' as const, desc: 'Increases defense & attack speed' },
-                { name: 'Vitality (VIT)', key: 'vitality' as const, desc: 'Increases maximum HP' },
-                { name: 'Energy (ENE)', key: 'energy' as const, desc: 'Increases skill damage & mana' }
+                { name: 'Сила (STR)', key: 'strength' as const, desc: 'Увеличивает урон атаки' },
+                { name: 'Ловкость (AGI)', key: 'agility' as const, desc: 'Увеличивает защиту и скорость' },
+                { name: 'Живучесть (VIT)', key: 'vitality' as const, desc: 'Увеличивает макс. здоровье' },
+                { name: 'Энергия (ENE)', key: 'energy' as const, desc: 'Увеличивает урон навыков и ману' }
               ].map(stat => (
                 <div
                   key={stat.key}
@@ -144,7 +144,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ core, isOpen, on
                     <button
                       onClick={() => addStat(stat.key)}
                       className="p-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded transition"
-                      title="Add 1 Point"
+                      title="Добавить 1 очко"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
@@ -155,36 +155,36 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ core, isOpen, on
           </div>
 
           {/* Equipment slots */}
-          <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-2">
-            <span className="text-xs font-bold text-slate-300 block">Equipped Gear</span>
+          <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+            <span className="text-xs font-bold text-slate-300 block">Экипированное снаряжение</span>
             <div className="flex flex-wrap gap-2">
               <div className="p-2 bg-slate-900 border border-slate-800 rounded flex items-center gap-2 text-xs">
                 <Sword className="w-4 h-4 text-amber-400" />
                 <span className="text-slate-300">
-                  Weapon: <strong className="text-slate-100">{inventory.equipment.weapon?.name ?? 'Short Sword'}</strong>
+                  Оружие: <strong className="text-slate-100">{inventory.equipment.weapon?.name ?? 'Короткий Меч'}</strong>
                 </span>
               </div>
               <div className="p-2 bg-slate-900 border border-slate-800 rounded flex items-center gap-2 text-xs">
                 <Shield className="w-4 h-4 text-cyan-400" />
                 <span className="text-slate-300">
-                  Armor: <strong className="text-slate-100">{inventory.equipment.armor?.name ?? 'Leather Armor'}</strong>
+                  Броня: <strong className="text-slate-100">{inventory.equipment.armor?.name ?? 'Кожаный Доспех'}</strong>
                 </span>
               </div>
             </div>
           </div>
 
           {/* Bag Items */}
-          <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-2">
+          <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
             <div className="flex justify-between items-center text-xs">
-              <span className="font-bold text-slate-300">Inventory Bag</span>
+              <span className="font-bold text-slate-300">Сумка инвентаря</span>
               <span className="text-slate-400 font-mono">
-                {inventory.items.length} / {inventory.capacity} Slots
+                {inventory.items.length} / {inventory.capacity} Слотов
               </span>
             </div>
 
             {inventory.items.length === 0 ? (
               <div className="text-center py-6 text-slate-500 text-xs italic">
-                Your inventory bag is currently empty. Slay monsters in Lorencia to collect loot!
+                Сумка пуста. Уничтожайте монстров в Лоренсии, чтобы собирать добычу!
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -217,7 +217,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ core, isOpen, on
                             onClick={() => usePotion(it.templateId)}
                             className="px-2 py-0.5 bg-red-600/30 hover:bg-red-600/50 text-red-300 border border-red-500/40 rounded text-[10px] font-bold transition"
                           >
-                            Use
+                            Пить
                           </button>
                         )}
                       </div>

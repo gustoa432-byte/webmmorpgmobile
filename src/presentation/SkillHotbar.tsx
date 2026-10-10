@@ -108,25 +108,25 @@ export const SkillHotbar: React.FC<SkillHotbarProps> = ({ core, onOpenInventory 
     <div className="flex flex-col items-center gap-2 pointer-events-auto">
       {/* Dead notice / Respawn prompt */}
       {hp.isDead && (
-        <div className="flex items-center gap-3 bg-red-950/90 border border-red-500/80 px-4 py-2 rounded-lg backdrop-blur shadow-2xl animate-pulse">
-          <span className="text-red-200 font-bold text-sm">You have died in battle!</span>
+        <div className="flex items-center gap-3 bg-red-950 border border-red-500 px-4 py-2 rounded-lg shadow-2xl animate-pulse">
+          <span className="text-red-200 font-bold text-sm">Вы погибли в бою!</span>
           <button
             onClick={triggerRespawn}
             className="flex items-center gap-1.5 px-3 py-1 bg-red-600 hover:bg-red-500 active:scale-95 text-white text-xs font-bold rounded transition shadow-md"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Respawn in Lorencia
+            Возродиться в Лоренсии
           </button>
         </div>
       )}
 
       {/* Resource Globes / Health & Mana Bars */}
-      <div className="flex items-center gap-4 bg-slate-900/90 border border-slate-700/80 px-4 py-2 rounded-full backdrop-blur shadow-xl">
+      <div className="flex items-center gap-4 bg-slate-900 border border-slate-700 px-4 py-2 rounded-full shadow-xl">
         {/* HP */}
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
           <div className="text-xs font-mono font-bold text-red-300">
-            HP {hp.current} / {hp.max}
+            ОЗ {hp.current} / {hp.max}
           </div>
         </div>
 
@@ -136,13 +136,13 @@ export const SkillHotbar: React.FC<SkillHotbarProps> = ({ core, onOpenInventory 
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-cyan-500" />
           <div className="text-xs font-mono font-bold text-cyan-300">
-            MP {mana.current} / {mana.max}
+            ОМ {mana.current} / {mana.max}
           </div>
         </div>
       </div>
 
       {/* Main Action Bar */}
-      <div className="flex items-center gap-2 bg-slate-900/95 border border-slate-700/90 p-2 rounded-2xl backdrop-blur shadow-2xl">
+      <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 p-2 rounded-2xl shadow-2xl">
         {/* Skills 1 to 4 */}
         {allSkills.map(skill => {
           const cdRemaining = cooldowns[skill.id] ?? 0;
@@ -155,18 +155,18 @@ export const SkillHotbar: React.FC<SkillHotbarProps> = ({ core, onOpenInventory 
               key={skill.id}
               onClick={() => triggerSkill(skill.slot)}
               disabled={hp.isDead}
-              title={`${skill.name} (MP: ${skill.manaCost}) - ${skill.description}`}
+              title={`${skill.name} (ОМ: ${skill.manaCost}) - ${skill.description}`}
               className={`relative group flex flex-col items-center justify-center w-13 h-13 rounded-xl border transition-all active:scale-95 ${
                 isDisabled
-                  ? 'bg-slate-800/60 border-slate-700 text-slate-500'
+                  ? 'bg-slate-800 border-slate-700 text-slate-500'
                   : 'bg-gradient-to-b from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 border-amber-500/40 hover:border-amber-400 text-slate-100 shadow-md'
               }`}
             >
               {/* Cooldown Overlay */}
               {isOnCd && (
-                <div className="absolute inset-0 bg-slate-950/80 rounded-xl flex items-center justify-center z-10">
+                <div className="absolute inset-0 bg-slate-950/90 rounded-xl flex items-center justify-center z-10">
                   <span className="text-xs font-mono font-bold text-amber-300">
-                    {cdRemaining.toFixed(1)}s
+                    {cdRemaining.toFixed(1)}с
                   </span>
                 </div>
               )}
@@ -177,20 +177,20 @@ export const SkillHotbar: React.FC<SkillHotbarProps> = ({ core, onOpenInventory 
               {/* Hotkey Tag & Mana */}
               <div className="flex items-center justify-between w-full px-1.5 text-[9px] text-slate-400 font-mono">
                 <span>[{skill.slot}]</span>
-                <span className="text-cyan-400 font-semibold">{skill.manaCost}m</span>
+                <span className="text-cyan-400 font-semibold">{skill.manaCost}м</span>
               </div>
             </button>
           );
         })}
 
-        <div className="h-8 w-px bg-slate-700/70 mx-1" />
+        <div className="h-8 w-px bg-slate-700 mx-1" />
 
         {/* Potion Button [Q] */}
         <button
           onClick={triggerPotion}
           disabled={potionCount <= 0 || hp.isDead}
-          title="Use Potion [Q]"
-          className="relative flex flex-col items-center justify-center w-13 h-13 rounded-xl border border-red-500/40 bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 text-red-300 transition-all shadow-md"
+          title="Использовать Зелье Здоровья [Q]"
+          className="relative flex flex-col items-center justify-center w-13 h-13 rounded-xl border border-red-500/40 bg-slate-800 hover:bg-slate-700 active:scale-95 text-red-300 transition-all shadow-md"
         >
           <HeartPulse className="w-5 h-5 text-red-400" />
           <span className="text-[9px] font-mono font-bold text-red-200">
@@ -202,21 +202,21 @@ export const SkillHotbar: React.FC<SkillHotbarProps> = ({ core, onOpenInventory 
         <button
           onClick={triggerPickup}
           disabled={hp.isDead}
-          title="Pick Up Loot [Space]"
-          className="flex flex-col items-center justify-center w-13 h-13 rounded-xl border border-yellow-500/40 bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 text-yellow-300 transition-all shadow-md"
+          title="Подобрать Добычу [Пробел]"
+          className="flex flex-col items-center justify-center w-13 h-13 rounded-xl border border-yellow-500/40 bg-slate-800 hover:bg-slate-700 active:scale-95 text-yellow-300 transition-all shadow-md"
         >
           <Package className="w-5 h-5 text-yellow-400" />
-          <span className="text-[9px] font-mono text-slate-400">[Space]</span>
+          <span className="text-[9px] font-mono text-slate-400">[Пробел]</span>
         </button>
 
         {/* Inventory Toggle Button */}
         <button
           onClick={onOpenInventory}
-          title="Inventory & Stats [I]"
-          className="flex flex-col items-center justify-center w-13 h-13 rounded-xl border border-blue-500/40 bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 text-blue-300 transition-all shadow-md"
+          title="Инвентарь и Характеристики [I]"
+          className="flex flex-col items-center justify-center w-13 h-13 rounded-xl border border-blue-500/40 bg-slate-800 hover:bg-slate-700 active:scale-95 text-blue-300 transition-all shadow-md"
         >
           <Package className="w-5 h-5 text-blue-400" />
-          <span className="text-[9px] font-mono text-slate-400">Bag</span>
+          <span className="text-[9px] font-mono text-slate-400">Сумка</span>
         </button>
       </div>
     </div>

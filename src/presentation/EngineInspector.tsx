@@ -61,54 +61,54 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
   });
 
   return (
-    <div className="flex flex-col h-full bg-slate-900/95 border-l border-slate-800 text-slate-200 text-xs backdrop-blur-md">
+    <div className="flex flex-col h-full bg-slate-900 border-l border-slate-800 text-slate-200 text-xs">
       {/* Header */}
-      <div className="p-3 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between">
+      <div className="p-3 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-amber-400" />
-          <span className="font-bold text-sm text-slate-100">Core Engine Inspector</span>
+          <span className="font-bold text-sm text-slate-100">Инспектор ядра GODKNIFE</span>
         </div>
         <button
           onClick={onOpenVerification}
           className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 rounded font-semibold transition"
-          title="Verify 9-Point Engine Specification"
+          title="Проверить соответствие 9 пунктам ТЗ"
         >
           <ShieldCheck className="w-3.5 h-3.5" />
-          Verify DoD
+          Проверка ТЗ
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 bg-slate-950/40">
+      <div className="flex border-b border-slate-800 bg-slate-950">
         <button
           onClick={() => setActiveTab('status')}
           className={`flex-1 py-2 text-center font-medium transition ${
             activeTab === 'status'
-              ? 'text-amber-400 border-b-2 border-amber-400 bg-slate-800/40'
+              ? 'text-amber-400 border-b-2 border-amber-400 bg-slate-800'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          Engine Loop
+          Игровой цикл
         </button>
         <button
           onClick={() => setActiveTab('ecs')}
           className={`flex-1 py-2 text-center font-medium transition ${
             activeTab === 'ecs'
-              ? 'text-amber-400 border-b-2 border-amber-400 bg-slate-800/40'
+              ? 'text-amber-400 border-b-2 border-amber-400 bg-slate-800'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          ECS World
+          Мир ECS
         </button>
         <button
           onClick={() => setActiveTab('events')}
           className={`flex-1 py-2 text-center font-medium transition ${
             activeTab === 'events'
-              ? 'text-amber-400 border-b-2 border-amber-400 bg-slate-800/40'
+              ? 'text-amber-400 border-b-2 border-amber-400 bg-slate-800'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          Event Bus ({eventHistory.length})
+          Шина событий ({eventHistory.length})
         </button>
       </div>
 
@@ -117,9 +117,9 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
         {activeTab === 'status' && (
           <div className="space-y-4">
             {/* Playback Controls */}
-            <div className="p-3 bg-slate-950/50 rounded-lg border border-slate-800 space-y-3">
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-3">
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Fixed Timestep Controls
+                Управление шагом (Fixed Timestep)
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -131,24 +131,23 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
                   }`}
                 >
                   {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-                  {isPaused ? 'Resume' : 'Pause'}
+                  {isPaused ? 'Продолжить' : 'Пауза'}
                 </button>
                 <button
                   onClick={onStepTick}
-                  disabled={!isPaused}
-                  className="flex items-center justify-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-slate-200 rounded font-semibold border border-slate-700 transition"
-                  title="Advance 1 Fixed Tick (0.05s)"
+                  className="flex items-center justify-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded font-semibold border border-slate-700 transition"
+                  title="Шагнуть на 1 фиксированный тик (0.05с)"
                 >
                   <StepForward className="w-3.5 h-3.5" />
-                  Tick
+                  1 Шаг
                 </button>
               </div>
 
               {/* TPS Slider */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] text-slate-400 font-mono">
-                  <span>Tick Rate</span>
-                  <span className="text-amber-400 font-bold">{tps} TPS ({Math.round(1000 / tps)} ms/tick)</span>
+                  <span>Частота тиков</span>
+                  <span className="text-amber-400 font-bold">{tps} TPS ({Math.round(1000 / tps)} мс/тик)</span>
                 </div>
                 <input
                   type="range"
@@ -163,41 +162,41 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
             </div>
 
             {/* Determinism & State Fingerprint */}
-            <div className="p-3 bg-slate-950/50 rounded-lg border border-slate-800 space-y-2">
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-2">
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Deterministic State Info
+                Детерминированное состояние
               </span>
               <div className="grid grid-cols-2 gap-2 text-mono text-[11px]">
-                <div className="p-2 bg-slate-900 rounded border border-slate-800/80">
-                  <div className="text-slate-400 text-[10px]">Total Ticks</div>
+                <div className="p-2 bg-slate-900 rounded border border-slate-800">
+                  <div className="text-slate-400 text-[10px]">Всего тиков</div>
                   <div className="text-amber-300 font-bold font-mono text-sm">{ticks}</div>
                 </div>
-                <div className="p-2 bg-slate-900 rounded border border-slate-800/80">
-                  <div className="text-slate-400 text-[10px]">State Hash (FNV-1a)</div>
+                <div className="p-2 bg-slate-900 rounded border border-slate-800">
+                  <div className="text-slate-400 text-[10px]">Хэш состояния (FNV-1a)</div>
                   <div className="text-cyan-300 font-bold font-mono text-sm">{stateHash}</div>
                 </div>
-                <div className="p-2 bg-slate-900 rounded border border-slate-800/80">
-                  <div className="text-slate-400 text-[10px]">RNG State</div>
+                <div className="p-2 bg-slate-900 rounded border border-slate-800">
+                  <div className="text-slate-400 text-[10px]">Состояние RNG</div>
                   <div className="text-slate-200 font-mono">{rngState}</div>
                 </div>
-                <div className="p-2 bg-slate-900 rounded border border-slate-800/80">
-                  <div className="text-slate-400 text-[10px]">Active Entities</div>
+                <div className="p-2 bg-slate-900 rounded border border-slate-800">
+                  <div className="text-slate-400 text-[10px]">Активных сущностей</div>
                   <div className="text-emerald-400 font-mono font-bold">{core.entities.getAllEntities().length}</div>
                 </div>
               </div>
             </div>
 
             {/* Reset World with Seed */}
-            <div className="p-3 bg-slate-950/50 rounded-lg border border-slate-800 space-y-2">
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-2">
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Deterministic Reset
+                Детерминированный сброс
               </span>
               <div className="flex gap-2">
                 <input
                   type="number"
                   value={seedInput}
                   onChange={e => setSeedInput(e.target.value)}
-                  placeholder="Seed integer"
+                  placeholder="Число сида"
                   className="w-24 px-2 py-1 bg-slate-900 border border-slate-700 rounded text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-400"
                 />
                 <button
@@ -205,44 +204,44 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
                   className="flex items-center gap-1 px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded font-semibold text-slate-200 transition"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  Reset World
+                  Сбросить мир
                 </button>
               </div>
             </div>
 
             {/* Physics Engine Info */}
-            <div className="p-3 bg-slate-950/50 rounded-lg border border-slate-800 space-y-1.5">
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-1.5">
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Physics Engine Backend
+                Физический движок
               </span>
               <div className="text-[11px] text-emerald-300 font-mono flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span>Rapier 2D WASM (@dimforge/rapier2d-compat)</span>
               </div>
               <ul className="text-[10px] text-slate-400 font-mono space-y-0.5 list-disc list-inside">
-                <li>KinematicCharacterController with slideEnabled</li>
-                <li>Autostep / Step offset (0.3m)</li>
-                <li>Zero-gravity 2D isometric rigid bodies</li>
-                <li>WalkabilityGrid (.att) integration</li>
+                <li>KinematicCharacterController со скольжением (sliding)</li>
+                <li>Автоматический уступ / Step offset (0.3м)</li>
+                <li>Нулевая гравитация для 2D изометрии</li>
+                <li>Интеграция сетки проходимости WalkabilityGrid (.att)</li>
               </ul>
             </div>
 
             {/* Architecture Systems Order */}
-            <div className="p-3 bg-slate-950/50 rounded-lg border border-slate-800 space-y-1.5">
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-1.5">
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Execution Order (Per Tick)
+                Порядок выполнения систем (за тик)
               </span>
               <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-slate-300 font-mono">
-                <li>CommandSystem</li>
-                <li>AISystem</li>
-                <li>MovementSystem (Rapier character controller)</li>
-                <li>CombatSystem</li>
-                <li>SkillSystem</li>
-                <li>PickupSystem</li>
-                <li>ProgressionSystem</li>
-                <li>SpawnSystem</li>
-                <li>LifetimeSystem</li>
-                <li>EventDispatch</li>
+                <li>CommandSystem (Обработка команд)</li>
+                <li>AISystem (Искусственный интеллект мобов)</li>
+                <li>MovementSystem (Контроллер движения Rapier)</li>
+                <li>CombatSystem (Боевая логика и автоатаки)</li>
+                <li>SkillSystem (Применение умений и откат)</li>
+                <li>PickupSystem (Подбор предметов и Zen)</li>
+                <li>ProgressionSystem (Опыт и распределение уровней)</li>
+                <li>SpawnSystem (Спавн и возрождение монстров)</li>
+                <li>LifetimeSystem (Время жизни временных объектов)</li>
+                <li>EventDispatch (Рассылка событий шины)</li>
               </ol>
             </div>
           </div>
@@ -252,17 +251,22 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
           <div className="space-y-3">
             {/* Filter buttons */}
             <div className="flex gap-1">
-              {(['All', 'Player', 'Monster', 'Item'] as const).map(f => (
+              {([
+                { key: 'All', label: 'Все' },
+                { key: 'Player', label: 'Игрок' },
+                { key: 'Monster', label: 'Монстры' },
+                { key: 'Item', label: 'Предметы' }
+              ] as const).map(f => (
                 <button
-                  key={f}
-                  onClick={() => setEntityFilter(f)}
+                  key={f.key}
+                  onClick={() => setEntityFilter(f.key as any)}
                   className={`px-2.5 py-1 rounded text-[11px] font-medium transition ${
-                    entityFilter === f
+                    entityFilter === f.key
                       ? 'bg-amber-500 text-slate-950 font-bold'
                       : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                   }`}
                 >
-                  {f}
+                  {f.label}
                 </button>
               ))}
             </div>
@@ -278,13 +282,15 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
                 const isM = core.entities.hasTag(id, 'Monster');
                 const isIt = core.entities.hasTag(id, 'Item');
 
+                const monsterName = ai ? core.configs.getMonster(ai.monsterTemplateId)?.name ?? ai.monsterTemplateId : 'Монстр';
+
                 const label = isPl
-                  ? 'Dark Knight (Player)'
+                  ? 'Темный Рыцарь (Игрок)'
                   : isM
-                  ? `${ai?.monsterTemplateId ?? 'Monster'} (#${id})`
+                  ? `${monsterName} (#${id})`
                   : isIt
-                  ? `Item Drop (#${id})`
-                  : `Entity #${id}`;
+                  ? `Дроп на земле (#${id})`
+                  : `Сущность #${id}`;
 
                 return (
                   <button
@@ -293,7 +299,7 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
                     className={`w-full flex items-center justify-between p-2 rounded border text-left transition ${
                       isSelected
                         ? 'bg-amber-500/20 border-amber-500/80 text-amber-200'
-                        : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:bg-slate-800/40'
+                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -314,12 +320,12 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
             {selectedEntityId && (
               <div className="p-3 bg-slate-950 rounded-lg border border-amber-500/40 space-y-2">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-1">
-                  <span className="font-bold text-amber-300">Entity #{selectedEntityId} Components</span>
+                  <span className="font-bold text-amber-300">Компоненты сущности #{selectedEntityId}</span>
                   <button
                     onClick={() => onSelectEntity(null)}
                     className="text-slate-400 hover:text-slate-200 text-[10px]"
                   >
-                    Close
+                    Закрыть
                   </button>
                 </div>
                 <div className="space-y-1.5 font-mono text-[10px] max-h-48 overflow-y-auto">
@@ -344,11 +350,11 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
         {activeTab === 'events' && (
           <div className="space-y-2">
             <span className="text-[11px] text-slate-400 block">
-              Recent events emitted by EventBus:
+              События, опубликованные через EventBus:
             </span>
             <div className="space-y-1 max-h-80 overflow-y-auto font-mono text-[10px] pr-1">
               {eventHistory.length === 0 ? (
-                <div className="text-slate-500 italic py-4 text-center">No events yet</div>
+                <div className="text-slate-500 italic py-4 text-center">Событий пока нет</div>
               ) : (
                 eventHistory.slice().reverse().map((ev, i) => {
                   const isDamaged = ev.type === 'OnEntityDamaged';
@@ -368,7 +374,7 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
                           ? 'bg-amber-950/40 border-amber-800/60 text-amber-300 font-bold'
                           : isItem
                           ? 'bg-cyan-950/30 border-cyan-800/50 text-cyan-300'
-                          : 'bg-slate-950/50 border-slate-800 text-slate-300'
+                          : 'bg-slate-950 border-slate-800 text-slate-300'
                       }`}
                     >
                       <div className="font-bold">{ev.type}</div>
