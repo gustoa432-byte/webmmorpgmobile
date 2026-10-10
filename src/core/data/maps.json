@@ -1,0 +1,65 @@
+{
+  "id": "lorencia",
+  "name": "Lorencia Town & Plains",
+  "width": 48,
+  "height": 48,
+  "cellSize": 1.0,
+  "spawnPoint": {
+    "x": 24,
+    "y": 24
+  },
+  "safeZoneRadius": 6.5,
+  "obstacles": [
+    { "x": 24, "y": 24, "radius": 1.8, "type": "pillar" },
+    { "x": 16, "y": 16, "radius": 1.5, "type": "pillar" },
+    { "x": 32, "y": 16, "radius": 1.5, "type": "pillar" },
+    { "x": 16, "y": 32, "radius": 1.5, "type": "pillar" },
+    { "x": 32, "y": 32, "radius": 1.5, "type": "pillar" },
+    { "x": 8, "y": 24, "radius": 2.2, "type": "wall" },
+    { "x": 40, "y": 24, "radius": 2.2, "type": "wall" },
+    { "x": 24, "y": 8, "radius": 2.2, "type": "wall" },
+    { "x": 24, "y": 40, "radius": 2.2, "type": "wall" }
+  ],
+  "spawnZones": [
+    {
+      "monsterId": "spider",
+      "count": 6,
+      "x": 14,
+      "y": 14,
+      "radius": 5.0,
+      "respawnTimeSeconds": 4.0
+    },
+    {
+      "monsterId": "budge_dragon",
+      "count": 5,
+      "x": 34,
+      "y": 14,
+      "radius": 5.5,
+      "respawnTimeSeconds": 5.0
+    },
+    {
+      "monsterId": "bull_fighter",
+      "count": 4,
+      "x": 14,
+      "y": 34,
+      "radius": 5.5,
+      "respawnTimeSeconds": 6.0
+    },
+    {
+      "monsterId": "hound",
+      "count": 3,
+      "x": 34,
+      "y": 34,
+      "radius": 6.0,
+      "respawnTimeSeconds": 7.0
+    },
+    {
+      "monsterId": "skeleton",
+      "count": 3,
+      "x": 38,
+      "y": 24,
+      "radius": 5.0,
+      "respawnTimeSeconds": 9.0
+    }
+  ]
+}

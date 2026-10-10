@@ -1,0 +1,141 @@
+[
+  {
+    "id": "zen",
+    "name": "Zen",
+    "rarity": "common",
+    "type": "currency",
+    "color": "#fbbf24",
+    "sellPrice": 1,
+    "stackable": true,
+    "description": "The gold currency of the Continent of MU."
+  },
+  {
+    "id": "small_healing_potion",
+    "name": "Small Healing Potion",
+    "rarity": "common",
+    "type": "consumable",
+    "healAmount": 60,
+    "color": "#ef4444",
+    "sellPrice": 50,
+    "stackable": true,
+    "description": "Restores 60 Health Points instantly."
+  },
+  {
+    "id": "large_healing_potion",
+    "name": "Large Healing Potion",
+    "rarity": "uncommon",
+    "type": "consumable",
+    "healAmount": 180,
+    "color": "#dc2626",
+    "sellPrice": 150,
+    "stackable": true,
+    "description": "Restores 180 Health Points instantly."
+  },
+  {
+    "id": "jewel_of_bless",
+    "name": "Jewel of Bless",
+    "rarity": "jewel",
+    "type": "jewel",
+    "color": "#38bdf8",
+    "sellPrice": 10000,
+    "stackable": false,
+    "description": "Sacred jewel that enchants equipment up to +6 with 100% success."
+  },
+  {
+    "id": "jewel_of_soul",
+    "name": "Jewel of Soul",
+    "rarity": "jewel",
+    "type": "jewel",
+    "color": "#c084fc",
+    "sellPrice": 8000,
+    "stackable": false,
+    "description": "Mystic jewel for high level equipment enhancement."
+  },
+  {
+    "id": "jewel_of_chaos",
+    "name": "Jewel of Chaos",
+    "rarity": "rare",
+    "type": "jewel",
+    "color": "#fb923c",
+    "sellPrice": 5000,
+    "stackable": false,
+    "description": "Volatile chaos gem used in the Chaos Machine for item synthesis."
+  },
+  {
+    "id": "short_sword",
+    "name": "Short Sword",
+    "rarity": "common",
+    "type": "weapon",
+    "bonusDamage": 12,
+    "color": "#e2e8f0",
+    "sellPrice": 300,
+    "stackable": false,
+    "description": "A sturdy iron blade. Increases physical damage by 12."
+  },
+  {
+    "id": "assassin_sword",
+    "name": "Assassin Sword",
+    "rarity": "rare",
+    "type": "weapon",
+    "bonusDamage": 26,
+    "color": "#60a5fa",
+    "sellPrice": 1800,
+    "stackable": false,
+    "description": "Serrated steel blade favored by elite mercenaries. +26 Damage."
+  },
+  {
+    "id": "dragon_helm",
+    "name": "Dragon Helm",
+    "rarity": "epic",
+    "type": "armor",
+    "bonusDefense": 16,
+    "color": "#f87171",
+    "sellPrice": 3500,
+    "stackable": false,
+    "description": "Forged in dragon scale. Adds 16 Defense."
+  },
+  {
+    "id": "dragon_armor",
+    "name": "Dragon Armor",
+    "rarity": "epic",
+    "type": "armor",
+    "bonusDefense": 32,
+    "color": "#f87171",
+    "sellPrice": 6000,
+    "stackable": false,
+    "description": "Heavy red cuirass adorned with dragon crest. Adds 32 Defense."
+  },
+  {
+    "id": "dragon_gloves",
+    "name": "Dragon Gloves",
+    "rarity": "rare",
+    "type": "armor",
+    "bonusDefense": 12,
+    "color": "#f87171",
+    "sellPrice": 2200,
+    "stackable": false,
+    "description": "Reinforced gauntlets providing 12 Defense."
+  },
+  {
+    "id": "dragon_pants",
+    "name": "Dragon Pants",
+    "rarity": "epic",
+    "type": "armor",
+    "bonusDefense": 22,
+    "color": "#f87171",
+    "sellPrice": 4500,
+    "stackable": false,
+    "description": "Dragon scale greaves providing 22 Defense."
+  },
+  {
+    "id": "dragon_boots",
+    "name": "Dragon Boots",
+    "rarity": "rare",
+    "type": "armor",
+    "bonusDefense": 14,
+    "color": "#f87171",
+    "sellPrice": 2800,
+    "stackable": false,
+    "description": "Plate boots with clawed spurs providing 14 Defense."
+  }
+]

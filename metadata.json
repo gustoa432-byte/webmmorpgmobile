@@ -1,0 +1,6 @@
+{
+  "name": "Mu Online Core Engine v1.0",
+  "description": "Deterministic, ECS-based, headless-ready Core Game Engine inspired by Mu Online Season 1 with Lorencia simulation, combat, skills, loot, and physics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

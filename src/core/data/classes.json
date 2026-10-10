@@ -1,0 +1,18 @@
+[
+  {
+    "id": "dark_knight",
+    "name": "Dark Knight",
+    "baseStats": {
+      "strength": 28,
+      "agility": 20,
+      "vitality": 25,
+      "energy": 10
+    },
+    "baseHp": 110,
+    "baseMana": 20,
+    "defaultWeaponDamageMin": 8,
+    "defaultWeaponDamageMax": 14,
+    "defaultAttackSpeed": 1.1,
+    "defaultAttackRange": 1.5
+  }
+]

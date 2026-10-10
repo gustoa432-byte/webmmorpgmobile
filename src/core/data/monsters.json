@@ -1,0 +1,114 @@
+[
+  {
+    "id": "spider",
+    "name": "Spider",
+    "level": 2,
+    "maxHp": 45,
+    "damageMin": 4,
+    "damageMax": 8,
+    "defense": 2,
+    "attackSpeed": 1.0,
+    "attackRange": 1.2,
+    "aggroRadius": 5.0,
+    "leashRadius": 10.0,
+    "walkSpeed": 2.2,
+    "expReward": 18,
+    "dropTable": [
+      { "itemId": "zen", "chance": 0.65, "minQty": 20, "maxQty": 80 },
+      { "itemId": "small_healing_potion", "chance": 0.35, "minQty": 1, "maxQty": 1 },
+      { "itemId": "short_sword", "chance": 0.12, "minQty": 1, "maxQty": 1 }
+    ],
+    "color": "#a855f7",
+    "size": 0.6
+  },
+  {
+    "id": "budge_dragon",
+    "name": "Budge Dragon",
+    "level": 4,
+    "maxHp": 85,
+    "damageMin": 9,
+    "damageMax": 14,
+    "defense": 4,
+    "attackSpeed": 0.9,
+    "attackRange": 1.3,
+    "aggroRadius": 6.0,
+    "leashRadius": 12.0,
+    "walkSpeed": 2.6,
+    "expReward": 35,
+    "dropTable": [
+      { "itemId": "zen", "chance": 0.70, "minQty": 50, "maxQty": 150 },
+      { "itemId": "small_healing_potion", "chance": 0.40, "minQty": 1, "maxQty": 2 },
+      { "itemId": "jewel_of_chaos", "chance": 0.08, "minQty": 1, "maxQty": 1 }
+    ],
+    "color": "#ef4444",
+    "size": 0.7
+  },
+  {
+    "id": "bull_fighter",
+    "name": "Bull Fighter",
+    "level": 7,
+    "maxHp": 150,
+    "damageMin": 16,
+    "damageMax": 24,
+    "defense": 8,
+    "attackSpeed": 0.8,
+    "attackRange": 1.4,
+    "aggroRadius": 6.5,
+    "leashRadius": 13.0,
+    "walkSpeed": 2.0,
+    "expReward": 70,
+    "dropTable": [
+      { "itemId": "zen", "chance": 0.75, "minQty": 120, "maxQty": 300 },
+      { "itemId": "large_healing_potion", "chance": 0.35, "minQty": 1, "maxQty": 1 },
+      { "itemId": "assassin_sword", "chance": 0.10, "minQty": 1, "maxQty": 1 },
+      { "itemId": "jewel_of_bless", "chance": 0.05, "minQty": 1, "maxQty": 1 }
+    ],
+    "color": "#f97316",
+    "size": 0.85
+  },
+  {
+    "id": "hound",
+    "name": "Hound",
+    "level": 10,
+    "maxHp": 210,
+    "damageMin": 25,
+    "damageMax": 35,
+    "defense": 12,
+    "attackSpeed": 1.2,
+    "attackRange": 1.3,
+    "aggroRadius": 7.0,
+    "leashRadius": 14.0,
+    "walkSpeed": 3.2,
+    "expReward": 120,
+    "dropTable": [
+      { "itemId": "zen", "chance": 0.80, "minQty": 200, "maxQty": 500 },
+      { "itemId": "dragon_boots", "chance": 0.09, "minQty": 1, "maxQty": 1 },
+      { "itemId": "jewel_of_soul", "chance": 0.06, "minQty": 1, "maxQty": 1 }
+    ],
+    "color": "#eab308",
+    "size": 0.75
+  },
+  {
+    "id": "skeleton",
+    "name": "Skeleton Warrior",
+    "level": 14,
+    "maxHp": 340,
+    "damageMin": 38,
+    "damageMax": 52,
+    "defense": 18,
+    "attackSpeed": 0.95,
+    "attackRange": 1.5,
+    "aggroRadius": 7.5,
+    "leashRadius": 15.0,
+    "walkSpeed": 2.3,
+    "expReward": 220,
+    "dropTable": [
+      { "itemId": "zen", "chance": 0.85, "minQty": 350, "maxQty": 800 },
+      { "itemId": "dragon_armor", "chance": 0.08, "minQty": 1, "maxQty": 1 },
+      { "itemId": "dragon_helm", "chance": 0.10, "minQty": 1, "maxQty": 1 },
+      { "itemId": "jewel_of_bless", "chance": 0.07, "minQty": 1, "maxQty": 1 }
+    ],
+    "color": "#94a3b8",
+    "size": 0.8
+  }
+]

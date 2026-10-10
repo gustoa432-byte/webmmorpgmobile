@@ -1,0 +1,54 @@
+[
+  {
+    "id": "weapon_skill",
+    "name": "Weapon Strike",
+    "slot": 1,
+    "manaCost": 5,
+    "cooldown": 0.8,
+    "damageMultiplier": 1.35,
+    "range": 1.6,
+    "aoeRadius": 0,
+    "effectType": "single_target",
+    "description": "Powerful weapon strike dealing 135% physical damage.",
+    "icon": "Sword"
+  },
+  {
+    "id": "cyclone",
+    "name": "Cyclone",
+    "slot": 2,
+    "manaCost": 9,
+    "cooldown": 1.4,
+    "damageMultiplier": 1.55,
+    "range": 2.5,
+    "aoeRadius": 1.8,
+    "effectType": "dash",
+    "description": "Lunge forward spinning blades, damaging targets in path.",
+    "icon": "Wind"
+  },
+  {
+    "id": "slash",
+    "name": "Slash",
+    "slot": 3,
+    "manaCost": 12,
+    "cooldown": 2.0,
+    "damageMultiplier": 1.9,
+    "range": 1.8,
+    "aoeRadius": 0,
+    "effectType": "single_target",
+    "description": "Heavy vertical cleave inflicting 190% crushing damage.",
+    "icon": "Flame"
+  },
+  {
+    "id": "twisting_slash",
+    "name": "Twisting Slash",
+    "slot": 4,
+    "manaCost": 18,
+    "cooldown": 2.5,
+    "damageMultiplier": 1.7,
+    "range": 2.0,
+    "aoeRadius": 3.4,
+    "effectType": "aoe_circle",
+    "description": "Signature 360-degree blade tempest striking all nearby enemies.",
+    "icon": "Zap"
+  }
+]
