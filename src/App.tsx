@@ -147,7 +147,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen w-screen bg-slate-950 text-slate-100 font-sans overflow-hidden select-none">
+    <div className="flex h-[100dvh] w-full bg-slate-950 text-slate-100 font-sans overflow-hidden select-none">
       {/* Main Game Screen Area (Monolithic portrait container: Top Bar -> Game World -> Bottom Controls) */}
       <div className="relative flex-1 h-full flex flex-col min-w-0 overflow-hidden">
         {/* SAFE TOP & TOP BAR (Fixed height container: flex-none, shrink-0) */}
@@ -326,15 +326,20 @@ export default function App() {
         </main>
 
         {/* BOTTOM CONTROLS & SAFE BOTTOM (Fixed container: flex-none shrink-0) */}
-        <footer className="flex-none shrink-0 z-20 bg-slate-950/80 border-t border-slate-800/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
-          <div className="flex items-center justify-between w-full max-w-lg mx-auto">
+        <footer
+          style={{
+            paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))'
+          }}
+          className="flex-none shrink-0 z-20 bg-slate-950 border-t border-slate-800 px-3 sm:px-4 pt-2.5"
+        >
+          <div className="flex items-end justify-between w-full max-w-lg mx-auto">
             {/* Zone 4: Left Virtual Joystick (Movement) */}
             <div className="shrink-0">
               <VirtualJoystick core={core} />
             </div>
 
             {/* Desktop Controls Hint (Hidden on mobile) */}
-            <div className="hidden lg:flex flex-col gap-1 p-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-400 font-mono">
+            <div className="hidden lg:flex flex-col gap-1 p-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-400 font-mono mb-2">
               <div className="text-amber-400 font-semibold">Управление (ПК):</div>
               <div>• Клик по мобу: Автоатака</div>
               <div>• Дабл-клик: Лут | WASD: Бег</div>
