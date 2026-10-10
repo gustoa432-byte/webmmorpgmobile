@@ -8,13 +8,15 @@ import { CommandQueue } from '../commands/CommandQueue';
 import { EntityManager } from '../entity/EntityManager';
 import { EventBus } from '../events/EventBus';
 import { ConfigLoader } from '../data/ConfigLoader';
+import { PhysicsWorld } from '../physics/PhysicsWorld';
 
 export class CommandSystem {
   constructor(
     private entities: EntityManager,
     private commandQueue: CommandQueue,
     private eventBus: EventBus,
-    private configs: ConfigLoader
+    private configs: ConfigLoader,
+    private physics: PhysicsWorld
   ) {}
 
   public update(dt: number): void {
@@ -43,6 +45,7 @@ export class CommandSystem {
           transform.position = { x: mapConfig.spawnPoint.x, y: mapConfig.spawnPoint.y, z: 0 };
           transform.previousPosition = { ...transform.position };
         }
+        this.physics.setPosition(entityId, mapConfig.spawnPoint);
         health.isDead = false;
         health.currentHp = health.maxHp;
 

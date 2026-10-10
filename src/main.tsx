@@ -1,5 +1,8 @@
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { initRapier } from './core/physics/RapierInit';
 
-createRoot(document.getElementById('root')!).render(<App />);
+initRapier().then(() => {
+  createRoot(document.getElementById('root')!).render(<App />);
+});

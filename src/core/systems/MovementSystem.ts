@@ -109,6 +109,16 @@ export class MovementSystem {
         movement.movementState = 'idle';
       }
 
+      // Ensure character body exists in Rapier
+      if (!this.physics.bodyMap.has(id)) {
+        this.physics.createCharacterBody(
+          id,
+          { x: transform.position.x, y: transform.position.y },
+          collider.radius,
+          collider.height
+        );
+      }
+
       // Calculate desired displacement
       const desiredDelta = {
         x: movement.velocity.x * dt,
@@ -116,13 +126,8 @@ export class MovementSystem {
       };
 
       if (desiredDelta.x !== 0 || desiredDelta.y !== 0) {
-        // Resolve movement with physics wall sliding and step offset
-        const result = this.physics.moveWithSliding(
-          { x: transform.position.x, y: transform.position.y },
-          desiredDelta,
-          collider.radius,
-          movement.stepOffset
-        );
+        // Resolve movement with Rapier KinematicCharacterController (sliding + autostep)
+        const result = this.physics.moveCharacter(id, desiredDelta, dt);
 
         transform.position.x = result.position.x;
         transform.position.y = result.position.y;
@@ -138,49 +143,7 @@ export class MovementSystem {
       }
     }
 
-    // Dynamic entity separation: push overlapping solid entities apart
-    for (let i = 0; i < movableEntities.length; i++) {
-      const idA = movableEntities[i];
-      const transformA = this.entities.getComponent(idA, 'Transform');
-      const colliderA = this.entities.getComponent(idA, 'Collider');
-      const healthA = this.entities.getComponent(idA, 'Health');
-      if (!transformA || !colliderA || !colliderA.solid || healthA?.isDead) continue;
-
-      for (let j = i + 1; j < movableEntities.length; j++) {
-        const idB = movableEntities[j];
-        const transformB = this.entities.getComponent(idB, 'Transform');
-        const colliderB = this.entities.getComponent(idB, 'Collider');
-        const healthB = this.entities.getComponent(idB, 'Health');
-        if (!transformB || !colliderB || !colliderB.solid || healthB?.isDead) continue;
-
-        const sep = this.physics.separateCircles(
-          { x: transformA.position.x, y: transformA.position.y },
-          colliderA.radius,
-          { x: transformB.position.x, y: transformB.position.y },
-          colliderB.radius
-        );
-
-        if (sep.collided) {
-          // Push both away if walkable
-          const newPosA = {
-            x: transformA.position.x + sep.offsetA.x,
-            y: transformA.position.y + sep.offsetA.y
-          };
-          if (this.physics.canFitAt(newPosA, colliderA.radius)) {
-            transformA.position.x = newPosA.x;
-            transformA.position.y = newPosA.y;
-          }
-
-          const newPosB = {
-            x: transformB.position.x + sep.offsetB.x,
-            y: transformB.position.y + sep.offsetB.y
-          };
-          if (this.physics.canFitAt(newPosB, colliderB.radius)) {
-            transformB.position.x = newPosB.x;
-            transformB.position.y = newPosB.y;
-          }
-        }
-      }
-    }
+    // Advance Rapier world step once for all bodies
+    this.physics.step(dt);
   }
 }

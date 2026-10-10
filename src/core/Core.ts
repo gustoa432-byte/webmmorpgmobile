@@ -35,7 +35,7 @@ export class Core {
   public readonly entities: EntityManager;
   public readonly commandQueue: CommandQueue;
   public readonly eventBus: EventBus;
-  public readonly physics: PhysicsWorld;
+  public physics: PhysicsWorld;
   public readonly configs: ConfigLoader;
   public readonly timestep: FixedTimestep;
 
@@ -66,14 +66,14 @@ export class Core {
     this.physics = new PhysicsWorld(mapConf.width, mapConf.height, mapConf.cellSize);
 
     // Instantiate systems
-    this.commandSystem = new CommandSystem(this.entities, this.commandQueue, this.eventBus, this.configs);
+    this.commandSystem = new CommandSystem(this.entities, this.commandQueue, this.eventBus, this.configs, this.physics);
     this.movementSystem = new MovementSystem(this.entities, this.physics);
     this.aiSystem = new AISystem(this.entities, this.rng, this.physics);
     this.combatSystem = new CombatSystem(this.entities, this.eventBus, this.rng, this.configs, this.physics);
     this.skillSystem = new SkillSystem(this.entities, this.eventBus, this.rng, this.configs);
     this.pickupSystem = new PickupSystem(this.entities, this.eventBus, this.configs);
     this.progressionSystem = new ProgressionSystem(this.entities, this.eventBus);
-    this.spawnSystem = new SpawnSystem(this.entities, this.eventBus, this.rng, this.configs);
+    this.spawnSystem = new SpawnSystem(this.entities, this.eventBus, this.rng, this.configs, this.physics);
     this.lifetimeSystem = new LifetimeSystem(this.entities);
 
     this.setupWorld();
@@ -162,6 +162,14 @@ export class Core {
       isTrigger: false,
       solid: true
     });
+
+    // Create Rapier body for player
+    this.physics.createCharacterBody(
+      id,
+      mapConf.spawnPoint,
+      0.5,
+      1.8
+    );
 
     this.entities.addComponent(id, {
       type: 'Health',
@@ -333,15 +341,19 @@ export class Core {
     this.commandQueue.clear();
     this.eventBus.reset();
 
+    this.physics.destroy();
+    const mapConf = this.configs.getMap();
+    this.physics = new PhysicsWorld(mapConf.width, mapConf.height, mapConf.cellSize);
+
     // Re-instantiate systems
-    this.commandSystem = new CommandSystem(this.entities, this.commandQueue, this.eventBus, this.configs);
+    this.commandSystem = new CommandSystem(this.entities, this.commandQueue, this.eventBus, this.configs, this.physics);
     this.movementSystem = new MovementSystem(this.entities, this.physics);
     this.aiSystem = new AISystem(this.entities, this.rng, this.physics);
     this.combatSystem = new CombatSystem(this.entities, this.eventBus, this.rng, this.configs, this.physics);
     this.skillSystem = new SkillSystem(this.entities, this.eventBus, this.rng, this.configs);
     this.pickupSystem = new PickupSystem(this.entities, this.eventBus, this.configs);
     this.progressionSystem = new ProgressionSystem(this.entities, this.eventBus);
-    this.spawnSystem = new SpawnSystem(this.entities, this.eventBus, this.rng, this.configs);
+    this.spawnSystem = new SpawnSystem(this.entities, this.eventBus, this.rng, this.configs, this.physics);
     this.lifetimeSystem = new LifetimeSystem(this.entities);
 
     this.setupWorld();

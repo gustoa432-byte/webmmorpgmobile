@@ -103,7 +103,10 @@ export default function App() {
               </h1>
             </div>
             <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700">
-              Season 1 Lorencia MVP
+              Season 1 Lorencia
+            </span>
+            <span className="hidden md:inline-block px-2 py-0.5 rounded-full bg-emerald-950/60 text-[10px] font-mono text-emerald-400 border border-emerald-800/60">
+              Rapier 2D WASM
             </span>
           </div>
 

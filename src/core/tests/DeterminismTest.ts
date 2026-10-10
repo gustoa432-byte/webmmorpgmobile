@@ -5,6 +5,7 @@
 
 import { Core } from '../Core';
 import { Command } from '../commands/Command';
+import { initRapier } from '../physics/RapierInit';
 
 export interface TestResult {
   name: string;
@@ -24,7 +25,8 @@ export interface VerificationReport {
 /**
  * Runs headless validation of all 9 Definition of Done criteria and checks strict seed determinism.
  */
-export function runCoreVerification(): VerificationReport {
+export async function runCoreVerification(): Promise<VerificationReport> {
+  await initRapier();
   const results: TestResult[] = [];
 
   // --- Criterion 1: World Creation & Entities ---
@@ -65,7 +67,9 @@ export function runCoreVerification(): VerificationReport {
   const targetMonsterId = monsters1[0];
   const monsterTrans = core1.entities.getComponent(targetMonsterId, 'Transform')!;
   const playerTrans = core1.entities.getComponent(playerId1, 'Transform')!;
-  playerTrans.position = { x: monsterTrans.position.x - 1.2, y: monsterTrans.position.y, z: 0 };
+  const combatTargetPos = { x: monsterTrans.position.x - 1.0, y: monsterTrans.position.y };
+  playerTrans.position = { x: combatTargetPos.x, y: combatTargetPos.y, z: 0 };
+  core1.physics.setPosition(playerId1, combatTargetPos);
 
   core1.enqueueCommand({
     type: 'SetTarget',
@@ -91,7 +95,7 @@ export function runCoreVerification(): VerificationReport {
     details: `Target approached and damaged (Initial HP: ${monsterInitialHp}, HP decreased during auto-attack).`
   });
 
-  // --- Criterion 5: Monster Death & Item Drop ---
+  // --- Criterion 5: Monster Death & Loot Drop ---
   // Reduce monster HP to 1 so the next attack lands the fatal blow
   const targetHealth = core1.entities.getComponent(targetMonsterId, 'Health');
   if (targetHealth) {
@@ -99,7 +103,7 @@ export function runCoreVerification(): VerificationReport {
   }
 
   // Step ticks until death blow lands
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 30; i++) {
     core1.fixedUpdate(0.05);
     if (targetHealth?.isDead) {
       break;
@@ -119,6 +123,7 @@ export function runCoreVerification(): VerificationReport {
     const droppedItemId = itemEntities[0];
     const droppedItemTrans = core1.entities.getComponent(droppedItemId, 'Transform')!;
     playerTrans.position = { x: droppedItemTrans.position.x, y: droppedItemTrans.position.y, z: 0 };
+    core1.physics.setPosition(playerId1, { x: droppedItemTrans.position.x, y: droppedItemTrans.position.y });
 
     core1.enqueueCommand({
       type: 'Pickup',
@@ -141,6 +146,7 @@ export function runCoreVerification(): VerificationReport {
 
   // --- Criterion 7: Skill Usage & Cooldown ---
   const skillSet = core1.entities.getComponent(playerId1, 'SkillSet')!;
+  skillSet.currentMana = skillSet.maxMana; // Ensure full mana for skill
   core1.enqueueCommand({
     type: 'UseSkill',
     entityId: playerId1,

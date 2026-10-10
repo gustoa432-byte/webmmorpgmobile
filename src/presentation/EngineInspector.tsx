@@ -210,6 +210,23 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
               </div>
             </div>
 
+            {/* Physics Engine Info */}
+            <div className="p-3 bg-slate-950/50 rounded-lg border border-slate-800 space-y-1.5">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Physics Engine Backend
+              </span>
+              <div className="text-[11px] text-emerald-300 font-mono flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Rapier 2D WASM (@dimforge/rapier2d-compat)</span>
+              </div>
+              <ul className="text-[10px] text-slate-400 font-mono space-y-0.5 list-disc list-inside">
+                <li>KinematicCharacterController with slideEnabled</li>
+                <li>Autostep / Step offset (0.3m)</li>
+                <li>Zero-gravity 2D isometric rigid bodies</li>
+                <li>WalkabilityGrid (.att) integration</li>
+              </ul>
+            </div>
+
             {/* Architecture Systems Order */}
             <div className="p-3 bg-slate-950/50 rounded-lg border border-slate-800 space-y-1.5">
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
@@ -217,8 +234,8 @@ export const EngineInspector: React.FC<EngineInspectorProps> = ({
               </span>
               <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-slate-300 font-mono">
                 <li>CommandSystem</li>
-                <li>MovementSystem</li>
                 <li>AISystem</li>
+                <li>MovementSystem (Rapier character controller)</li>
                 <li>CombatSystem</li>
                 <li>SkillSystem</li>
                 <li>PickupSystem</li>

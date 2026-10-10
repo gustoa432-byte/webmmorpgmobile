@@ -8,6 +8,7 @@ import { EventBus, OnEntityDiedEvent } from '../events/EventBus';
 import { SeededRNG } from '../rng/SeededRNG';
 import { ConfigLoader } from '../data/ConfigLoader';
 import { EntityId } from '../types';
+import { PhysicsWorld } from '../physics/PhysicsWorld';
 
 interface RespawnEntry {
   templateId: string;
@@ -24,7 +25,8 @@ export class SpawnSystem {
     private entities: EntityManager,
     private eventBus: EventBus,
     private rng: SeededRNG,
-    private configs: ConfigLoader
+    private configs: ConfigLoader,
+    private physics: PhysicsWorld
   ) {
     this.unsubscribe = this.eventBus.subscribe('OnEntityDied', (event: OnEntityDiedEvent) => {
       this.handleEntityDeath(event);
@@ -125,6 +127,7 @@ export class SpawnSystem {
     // 1. Process deferred entity destructions from dead entities
     if (this.pendingDestroyIds.length > 0) {
       for (const id of this.pendingDestroyIds) {
+        this.physics.removeBody(id);
         this.entities.destroyEntity(id);
       }
       this.pendingDestroyIds = [];
@@ -163,6 +166,7 @@ export class SpawnSystem {
       type: 'Movement',
       speed: monsterConf.walkSpeed,
       velocity: { x: 0, y: 0 },
+      desiredDirection: null,
       targetPosition: null,
       path: [],
       movementState: 'idle',
@@ -177,6 +181,14 @@ export class SpawnSystem {
       isTrigger: false,
       solid: true
     });
+
+    // Create Rapier kinematic character body
+    this.physics.createCharacterBody(
+      id,
+      spawnPos,
+      monsterConf.size * 0.5,
+      monsterConf.size
+    );
 
     this.entities.addComponent(id, {
       type: 'Health',

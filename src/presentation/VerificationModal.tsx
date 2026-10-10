@@ -16,13 +16,14 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
   const [report, setReport] = useState<VerificationReport | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  const runTests = () => {
+  const runTests = async () => {
     setIsRunning(true);
-    setTimeout(() => {
-      const rep = runCoreVerification();
+    try {
+      const rep = await runCoreVerification();
       setReport(rep);
+    } finally {
       setIsRunning(false);
-    }, 150);
+    }
   };
 
   useEffect(() => {
